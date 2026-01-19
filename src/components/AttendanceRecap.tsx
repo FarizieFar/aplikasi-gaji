@@ -50,7 +50,7 @@ export const AttendanceRecap: React.FC<AttendanceRecapProps> = ({ records, onDel
   const [filterStartDate, setFilterStartDate] = useState('');
   const [filterEndDate, setFilterEndDate] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // Default newest first
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc'); // Default oldest first
 
   // Export State
   const [isGeneratingRecap, setIsGeneratingRecap] = useState(false);
@@ -276,8 +276,8 @@ export const AttendanceRecap: React.FC<AttendanceRecapProps> = ({ records, onDel
     const filtered = filteredAndSortedRecords; // Use filtered context
     if (filtered.length === 0) return;
 
-    const startDate = new Date(filtered[filtered.length - 1].date);
-    const endDate = new Date(filtered[0].date);
+    const startDate = new Date(filtered[0].date); // Earliest date is first now
+    const endDate = new Date(filtered[filtered.length - 1].date); // Latest date is last now
     
     const fmtDate = (d: Date) => d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
 
