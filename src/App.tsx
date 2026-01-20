@@ -227,7 +227,7 @@ const App: React.FC = () => {
       case Tab.SETTINGS:
         return <Settings currentProfile={userProfile} onSave={handleSaveProfile} onImportData={handleImportData} currentRecords={records} />;
       case Tab.FINANCE:
-        return <FinanceTracker />;
+        return <FinanceTracker userProfile={userProfile} />;
       default:
         return <Dashboard records={records} />;
     }
