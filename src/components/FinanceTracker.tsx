@@ -405,72 +405,145 @@ export const FinanceTracker: React.FC<FinanceTrackerProps> = ({ userProfile = DE
         )}
       </div>
 
-      {/* Hidden PDF Report */}
+      {/* Hidden PDF Report - Redesigned to match Salary Slip aesthetic */}
       <div className="fixed top-0 left-0 -z-50 opacity-0 pointer-events-none">
-        <div id="hidden-finance-report" className="w-[210mm] min-h-[297mm] bg-white text-slate-800 p-12 relative mx-auto font-sans leading-normal box-border">
-             <div className="absolute top-0 left-0 bottom-0 w-3 bg-gradient-to-b from-slate-800 via-slate-700 to-slate-900"></div>
+        <div id="hidden-finance-report" className="w-[210mm] min-h-[297mm] bg-white text-slate-800 relative mx-auto font-sans leading-normal box-border">
              
-             {/* Header */}
-             <div className="flex justify-between items-start mb-10 border-b pb-6 border-slate-100 pl-4">
-                  <div className="flex items-center gap-5">
-                    <div className="w-14 h-14 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-lg">
-                      <Building2 size={28} strokeWidth={1.5} />
-                    </div>
-                    <div>
-                      <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">{userProfile.companyName}</h1>
-                      <div className="flex items-center gap-1.5 text-slate-500 text-[10px] font-medium uppercase tracking-wide">
-                        <MapPin className="w-3 h-3" />
-                        {userProfile.companyAddress}
+             {/* Decorative Sidebar */}
+             <div className="absolute top-0 left-0 bottom-0 w-3 bg-gradient-to-b from-slate-800 via-slate-700 to-slate-900"></div>
+
+             {/* Watermark */}
+             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03] pointer-events-none rotate-[-45deg]">
+                  <span className="text-[100px] font-black uppercase tracking-widest text-slate-900">Finance</span>
+             </div>
+
+             <div className="p-12 pl-16 h-full flex flex-col">
+                 
+                 {/* Header */}
+                 <div className="flex justify-between items-start mb-10 border-b pb-6 border-slate-100">
+                      <div className="flex items-center gap-5">
+                        <div className="w-16 h-16 bg-slate-900 text-white rounded-2xl flex items-center justify-center shadow-lg border border-slate-700">
+                          <Building2 size={32} strokeWidth={1.5} />
+                        </div>
+                        <div>
+                          <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-none mb-2">{userProfile.companyName}</h1>
+                          <div className="flex items-center gap-1.5 text-slate-500 text-[10px] font-medium uppercase tracking-wide">
+                            <MapPin className="w-3 h-3" />
+                            {userProfile.companyAddress}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <h2 className="text-3xl font-black text-slate-300 tracking-tighter uppercase mb-1">Financial Report</h2>
-                    <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded">Generated on {new Date().toLocaleDateString('id-ID')}</span>
-                  </div>
-             </div>
+                      <div className="text-right">
+                        <h2 className="text-3xl font-black text-slate-200 tracking-tighter uppercase mb-2">Financial Report</h2>
+                        <div className="flex flex-col items-end gap-1">
+                            <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-md uppercase tracking-wider">
+                                General Ledger
+                            </span>
+                            <span className="text-xs font-mono text-slate-400 font-medium">Ref: FIN/{new Date().getFullYear()}/{Math.floor(Math.random() * 10000)}</span>
+                        </div>
+                      </div>
+                 </div>
 
-             {/* Summary */}
-             <div className="grid grid-cols-3 gap-4 mb-8 pl-4">
-                 <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-100">
-                     <span className="text-[10px] font-bold text-emerald-600 uppercase">Total Income</span>
-                     <div className="text-xl font-black text-slate-800">{formatCurrency(totalIncome).replace(',00','')}</div>
-                 </div>
-                 <div className="p-4 bg-rose-50 rounded-lg border border-rose-100">
-                     <span className="text-[10px] font-bold text-rose-600 uppercase">Total Expense</span>
-                     <div className="text-xl font-black text-slate-800">{formatCurrency(totalExpense).replace(',00','')}</div>
-                 </div>
-                 <div className="p-4 bg-slate-900 text-white rounded-lg">
-                     <span className="text-[10px] font-bold text-slate-400 uppercase">Net Balance</span>
-                     <div className="text-xl font-black text-white">{formatCurrency(balance).replace(',00','')}</div>
-                 </div>
-             </div>
+                 {/* Summary Cards */}
+                 <div className="grid grid-cols-2 gap-8 mb-8">
+                     <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 relative overflow-hidden">
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Report Details</div>
+                        <div className="space-y-2">
+                             <div className="flex justify-between border-b border-dashed border-slate-200 pb-1">
+                                <span className="text-xs text-slate-500">Generated Date</span>
+                                <span className="text-xs font-bold text-slate-700">{new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                             </div>
+                             <div className="flex justify-between border-b border-dashed border-slate-200 pb-1">
+                                <span className="text-xs text-slate-500">Total Transactions</span>
+                                <span className="text-xs font-bold text-slate-700">{records.length} Item</span>
+                             </div>
+                             <div className="flex justify-between">
+                                <span className="text-xs text-slate-500">Prepared By</span>
+                                <span className="text-xs font-bold text-slate-700">{userProfile.employeeName}</span>
+                             </div>
+                        </div>
+                     </div>
 
-             {/* Table */}
-             <div className="pl-4">
-                 <table className="w-full text-xs text-left border-collapse">
-                     <thead>
-                         <tr className="bg-slate-100 text-slate-500 uppercase tracking-wider text-[10px]">
-                             <th className="p-3 font-bold border-b border-slate-200">Date</th>
-                             <th className="p-3 font-bold border-b border-slate-200">Category</th>
-                             <th className="p-3 font-bold border-b border-slate-200 text-right">Amount</th>
-                         </tr>
-                     </thead>
-                     <tbody className="text-slate-600">
-                         {records.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(r => (
-                             <tr key={r.id} className="border-b border-slate-50">
-                                 <td className="p-3 font-bold">{new Date(r.date).toLocaleDateString('id-ID')}</td>
-                                 <td className="p-3">
-                                     <span className="font-bold block text-slate-800">{r.category}</span>
-                                     <span className="text-[10px] text-slate-400">{r.note}</span>
-                                 </td>
-                                 <td className={`p-3 text-right font-mono font-bold ${r.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                                     {r.type === 'income' ? '+' : '-'} {formatCurrency(r.amount).replace(',00','')}
-                                 </td>
-                             </tr>
-                         ))}
-                     </tbody>
-                 </table>
+                     <div className="bg-slate-900 rounded-2xl p-6 text-white relative overflow-hidden shadow-xl">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500 rounded-full mix-blend-overlay filter blur-3xl opacity-20"></div>
+                        <div className="absolute bottom-0 left-0 w-32 h-32 bg-rose-500 rounded-full mix-blend-overlay filter blur-3xl opacity-20"></div>
+                        
+                        <div className="relative z-10">
+                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Net Balance Summary</div>
+                            <div className="text-3xl font-black tracking-tight mb-4">
+                                <span className="text-sm text-slate-500 font-medium mr-2">IDR</span>
+                                {formatCurrency(balance).replace(',00', '').replace('Rp', '')}
+                            </div>
+                            <div className="grid grid-cols-2 gap-4 text-xs">
+                                <div>
+                                    <div className="text-slate-500 text-[9px] uppercase">Total Income</div>
+                                    <div className="font-bold text-emerald-400">{formatCurrency(totalIncome).replace(',00', '')}</div>
+                                </div>
+                                <div>
+                                    <div className="text-slate-500 text-[9px] uppercase">Total Expense</div>
+                                    <div className="font-bold text-rose-400">{formatCurrency(totalExpense).replace(',00', '')}</div>
+                                </div>
+                            </div>
+                        </div>
+                     </div>
+                 </div>
+
+                 {/* Table */}
+                 <div className="mb-8 flex-1">
+                     <div className="rounded-xl border border-slate-200 overflow-hidden">
+                        <table className="w-full text-xs text-left">
+                            <thead className="bg-slate-100 text-slate-500 uppercase tracking-wider text-[10px]">
+                                <tr>
+                                    <th className="p-3 font-bold border-b border-slate-200 pl-6">No</th>
+                                    <th className="p-3 font-bold border-b border-slate-200">Date</th>
+                                    <th className="p-3 font-bold border-b border-slate-200">Category / Description</th>
+                                    <th className="p-3 font-bold border-b border-slate-200 text-right">Debit (In)</th>
+                                    <th className="p-3 font-bold border-b border-slate-200 text-right pr-6">Credit (Out)</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 bg-white">
+                                {records.sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((r, idx) => (
+                                    <tr key={r.id} className="hover:bg-slate-50/50">
+                                        <td className="p-3 pl-6 font-bold text-slate-400">{idx + 1}</td>
+                                        <td className="p-3 font-bold text-slate-700">
+                                            {new Date(r.date).toLocaleDateString('id-ID')}
+                                        </td>
+                                        <td className="p-3">
+                                            <span className="font-bold block text-slate-800">{r.category}</span>
+                                            {r.note && <span className="text-[10px] text-slate-500 italic">{r.note}</span>}
+                                        </td>
+                                        <td className="p-3 text-right font-mono font-medium text-emerald-600">
+                                            {r.type === 'income' ? formatCurrency(r.amount).replace(',00','').replace('Rp','') : '-'}
+                                        </td>
+                                        <td className="p-3 text-right font-mono font-medium text-rose-600 pr-6">
+                                            {r.type === 'expense' ? formatCurrency(r.amount).replace(',00','').replace('Rp','') : '-'}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                     </div>
+                 </div>
+
+                 {/* Signatures */}
+                 <div className="flex justify-between items-end mt-auto pt-8 border-t border-slate-100">
+                     <div className="w-48 text-center">
+                         <div className="h-20 border-b border-slate-300 mb-2"></div>
+                         <p className="text-xs font-bold text-slate-700">{userProfile.employeeName}</p>
+                         <p className="text-[10px] text-slate-500 uppercase tracking-wide">Prepared By</p>
+                     </div>
+                     
+                     <div className="w-48 text-center">
+                         <div className="h-20 border-b border-slate-300 mb-2"></div>
+                         <p className="text-xs font-bold text-slate-700">Finance Manager</p>
+                         <p className="text-[10px] text-slate-500 uppercase tracking-wide">Approved By</p>
+                     </div>
+                 </div>
+                 
+                 <div className="text-center mt-8 text-[9px] text-slate-400">
+                    <p>Generated by TimeMaster App • {new Date().toLocaleString()}</p>
+                 </div>
+
              </div>
         </div>
       </div>
