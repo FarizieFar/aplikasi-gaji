@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Timer, Zap, CalendarDays, Wallet, LogOut, UserCircle, Settings as SettingsIcon, PlayCircle, LayoutDashboard } from 'lucide-react';
+import { Clock, Timer, Zap, CalendarDays, Wallet, LogOut, UserCircle, Settings as SettingsIcon, LayoutDashboard, Coins } from 'lucide-react';
 import { TimeAdder } from './components/TimeAdder';
 import { DurationCalculator } from './components/DurationCalculator';
 import { WageCalculator } from './components/WageCalculator';
 import { AttendanceRecap } from './components/AttendanceRecap';
 import { LoginScreen } from './components/LoginScreen';
 import { Settings } from './components/Settings';
-import { LiveTracker } from './components/LiveTracker';
+import { FinanceTracker } from './components/FinanceTracker';
 import { Dashboard } from './components/Dashboard';
 import { WorkRecord, UserProfile, DEFAULT_PROFILE, generateEmployeeId } from './utils/timeUtils';
 import { AlertDialog, AlertType } from './components/ui/AlertDialog';
@@ -14,7 +14,7 @@ import { AlertDialog, AlertType } from './components/ui/AlertDialog';
 enum Tab {
   DASHBOARD = 'dashboard',
   RECAP = 'recap',
-  LIVE = 'live',
+  FINANCE = 'finance',
   SALARY = 'salary',
   ADDER = 'adder',
   DURATION = 'duration',
@@ -145,14 +145,6 @@ const App: React.FC = () => {
             () => setActiveTab(Tab.RECAP),
             'Lihat Rekap'
         );
-    } else if (activeTab === Tab.LIVE) {
-        showAlert(
-            'success',
-            'Sesi Selesai!',
-            'Waktu kerja berhasil direkam. Anda dapat melihat detailnya di halaman Rekap.',
-            () => setActiveTab(Tab.RECAP),
-            'OK'
-        );
     }
   };
 
@@ -198,7 +190,7 @@ const App: React.FC = () => {
   const tabs = [
     { id: Tab.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
     { id: Tab.RECAP, label: 'Rekap', icon: CalendarDays },
-    { id: Tab.LIVE, label: 'Live', icon: PlayCircle },
+    { id: Tab.FINANCE, label: 'Keuangan', icon: Coins },
     { id: Tab.SALARY, label: 'Input Gaji', icon: Wallet },
     { id: Tab.ADDER, label: 'Kalkulator', icon: Clock },
     { id: Tab.DURATION, label: 'Durasi', icon: Timer },
@@ -234,8 +226,8 @@ const App: React.FC = () => {
         );
       case Tab.SETTINGS:
         return <Settings currentProfile={userProfile} onSave={handleSaveProfile} onImportData={handleImportData} currentRecords={records} />;
-      case Tab.LIVE:
-        return <LiveTracker userProfile={userProfile} onSaveRecord={handleSaveRecord} />;
+      case Tab.FINANCE:
+        return <FinanceTracker />;
       default:
         return <Dashboard records={records} />;
     }

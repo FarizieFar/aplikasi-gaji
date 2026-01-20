@@ -18,6 +18,15 @@ export interface TimeParts {
     totalWage: number;
   }
   
+  export interface FinanceRecord {
+    id: string;
+    date: string;
+    type: 'income' | 'expense';
+    category: string;
+    amount: number;
+    note: string;
+  }
+  
   export interface UserProfile {
     employeeName: string;
     employeeRole: string;
