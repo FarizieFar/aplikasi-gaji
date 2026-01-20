@@ -393,7 +393,7 @@ export const AttendanceRecap: React.FC<AttendanceRecapProps> = ({ records, onDel
             Kembali ke Daftar
          </button>
 
-         <div className="bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 overflow-hidden border border-slate-100">
+         <div className="bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 overflow-hidden border border-slate-100 transition-colors">
             {/* Form Header */}
             <div className="bg-slate-50/80 border-b border-slate-100 p-6 sm:p-8">
                <div className="flex items-center gap-4">
@@ -508,7 +508,7 @@ export const AttendanceRecap: React.FC<AttendanceRecapProps> = ({ records, onDel
                       )}
                   </div>
                   <div className="md:col-span-5">
-                      <div className="bg-slate-900 rounded-3xl p-6 text-white relative overflow-hidden h-full flex flex-col justify-between">
+                      <div className="bg-slate-900 rounded-3xl p-6 text-white relative overflow-hidden h-full flex flex-col justify-between border border-transparent">
                           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500 rounded-full mix-blend-overlay filter blur-3xl opacity-20"></div>
                           <div className="relative z-10">
                               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Ringkasan Kalkulasi</p>
@@ -573,7 +573,7 @@ export const AttendanceRecap: React.FC<AttendanceRecapProps> = ({ records, onDel
       <div className="space-y-6">
         
         {/* Header Statistics Card */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-indigo-100 border border-white relative overflow-hidden">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-indigo-100 border border-white relative overflow-hidden transition-colors">
            {/* ... Header content ... */}
            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-full mix-blend-multiply filter blur-3xl opacity-50 -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
            
@@ -625,8 +625,8 @@ export const AttendanceRecap: React.FC<AttendanceRecapProps> = ({ records, onDel
         </div>
         
         {/* --- SEARCH & FILTER TOOLBAR --- */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4 justify-between">
-            <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl w-full md:w-auto overflow-x-auto">
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4 justify-between transition-colors">
+            <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl w-full md:w-auto overflow-x-auto border border-slate-100">
                 <div className="flex items-center px-3 text-slate-400">
                     <Filter className="w-4 h-4" />
                 </div>
@@ -669,7 +669,7 @@ export const AttendanceRecap: React.FC<AttendanceRecapProps> = ({ records, onDel
         </div>
 
         {/* List / Table */}
-        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden transition-colors">
           <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
              <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-slate-400" />

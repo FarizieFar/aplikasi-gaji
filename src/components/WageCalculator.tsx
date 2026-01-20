@@ -131,7 +131,7 @@ export const WageCalculator: React.FC<WageCalculatorProps> = ({ onSaveRecord, on
     <div className="max-w-4xl mx-auto space-y-6 pb-12">
       
       {/* --- SECTION 1: INPUT CARD --- */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 relative">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 relative transition-colors">
         {onCancel && (
             <button 
                 onClick={onCancel}
@@ -150,7 +150,7 @@ export const WageCalculator: React.FC<WageCalculatorProps> = ({ onSaveRecord, on
             <h2 className="text-lg font-bold text-slate-800">Parameter Gaji</h2>
           </div>
           
-          <div className="bg-slate-100 p-1 rounded-lg flex w-full sm:w-auto">
+          <div className="bg-slate-100 p-1 rounded-lg flex w-full sm:w-auto border border-slate-200">
             <button
               onClick={() => handleModeChange('range')}
               className={`flex-1 sm:flex-none py-1.5 px-4 rounded-md text-xs font-bold transition-all duration-200 ${
@@ -236,7 +236,7 @@ export const WageCalculator: React.FC<WageCalculatorProps> = ({ onSaveRecord, on
       </div>
 
       {/* --- SECTION 2: RESULT DASHBOARD (Colored & Friendly) --- */}
-      <div className="bg-white rounded-3xl shadow-xl shadow-emerald-900/10 border border-emerald-100 overflow-hidden">
+      <div className="bg-white rounded-3xl shadow-xl shadow-emerald-900/10 border border-emerald-100 overflow-hidden transition-colors">
          {/* Top: Main Result with Color */}
          <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-8 pb-6 text-center text-white relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full mix-blend-overlay filter blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
@@ -277,7 +277,7 @@ export const WageCalculator: React.FC<WageCalculatorProps> = ({ onSaveRecord, on
          </div>
 
          {/* Bottom: Actions */}
-         <div className="p-4 bg-slate-50 flex flex-col sm:flex-row gap-3 justify-center items-center">
+         <div className="p-4 bg-slate-50 flex flex-col sm:flex-row gap-3 justify-center items-center border-t border-slate-100">
              <button 
                onClick={handleSaveClick}
                className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-sm bg-indigo-600 text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:shadow-indigo-300 transition-all flex items-center justify-center gap-2 transform active:scale-95"

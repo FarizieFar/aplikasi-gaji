@@ -32,7 +32,7 @@ export const DurationCalculator: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 overflow-hidden border border-white">
+      <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 overflow-hidden border border-white transition-colors">
         <div className="p-6 sm:p-8 bg-gradient-to-b from-white to-slate-50/50">
           <div className="flex items-center gap-3 mb-8">
             <div className="p-3 bg-violet-100 text-violet-600 rounded-2xl">
@@ -60,7 +60,7 @@ export const DurationCalculator: React.FC = () => {
                     type="time"
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
-                    className="w-full text-3xl font-bold text-slate-800 bg-transparent border-0 border-b-2 border-slate-200 focus:border-violet-500 focus:ring-0 px-0 py-2 transition-colors cursor-pointer"
+                    className="w-full text-3xl font-bold text-slate-800 bg-transparent border-0 border-b-2 border-slate-200 focus:border-violet-500 px-0 py-2 transition-colors cursor-pointer"
                   />
                 </div>
               </div>
@@ -76,7 +76,7 @@ export const DurationCalculator: React.FC = () => {
                     type="time"
                     value={endTime}
                     onChange={(e) => setEndTime(e.target.value)}
-                    className="w-full text-3xl font-bold text-slate-800 bg-transparent border-0 border-b-2 border-slate-200 focus:border-violet-500 focus:ring-0 px-0 py-2 transition-colors cursor-pointer"
+                    className="w-full text-3xl font-bold text-slate-800 bg-transparent border-0 border-b-2 border-slate-200 focus:border-violet-500 px-0 py-2 transition-colors cursor-pointer"
                   />
                   {isNextDay && (
                     <span className="absolute top-2 right-0 text-[10px] font-bold bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full">

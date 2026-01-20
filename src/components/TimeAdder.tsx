@@ -54,7 +54,7 @@ export const TimeAdder: React.FC = () => {
       </div>
 
       {/* Input List */}
-      <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 p-6 sm:p-8 border border-white">
+      <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 p-6 sm:p-8 border border-white transition-colors">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
             <Clock className="w-5 h-5 text-violet-500" />
