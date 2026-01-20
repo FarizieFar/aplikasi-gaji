@@ -1,12 +1,13 @@
 import React from 'react';
 import { WorkRecord, formatCurrency } from '../utils/timeUtils';
-import { TrendingUp, Clock, Wallet, PieChart as PieIcon, Activity } from 'lucide-react';
+import { TrendingUp, Clock, Wallet, Activity, PieChart as PieIcon } from 'lucide-react';
 
 interface DashboardProps {
   records: WorkRecord[];
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ records }) => {
+
   // 1. Calculate Summary Stats
   const totalWage = records.reduce((acc, curr) => acc + curr.totalWage, 0);
   const totalHours = records.reduce((acc, curr) => acc + curr.totalHoursDecimal, 0);
@@ -61,7 +62,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ records }) => {
               </div>
            </div>
            <div className="relative z-10 mt-auto">
-              <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">All Time</span>
+              <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">Semua Waktu</span>
            </div>
         </div>
 
@@ -108,13 +109,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ records }) => {
                     <h3 className="font-bold text-slate-800 flex items-center gap-2">
                         <Activity className="w-5 h-5 text-indigo-500" /> Grafik Pendapatan
                     </h3>
-                    <p className="text-xs text-slate-400">7 Data Terakhir</p>
+                    <p className="text-xs text-slate-400">7 Entri Terakhir</p>
                 </div>
              </div>
              
              {/* CSS Bar Chart */}
              <div className="h-48 flex items-end justify-between gap-2 sm:gap-4 pt-4 border-b border-slate-100 pb-2">
-                {last7.map((item) => {
+                {last7.map((item, index) => {
                     const heightPercent = (item.totalWage / maxWage) * 100;
                     const dayName = new Date(item.date).toLocaleDateString('id-ID', { weekday: 'short' });
                     const dateNum = new Date(item.date).toLocaleDateString('id-ID', { day: 'numeric' });

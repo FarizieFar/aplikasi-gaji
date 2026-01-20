@@ -93,7 +93,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             
             <div className="text-center mb-10">
                 <h2 className="text-3xl font-black text-slate-900 mb-2">
-                    {isLoginMode ? 'Selamat Datang Kembali' : 'Buat Akun Baru'}
+                    {isLoginMode ? 'Selamat Datang' : 'Buat Akun Baru'}
                 </h2>
                 <p className="text-slate-500 text-sm">
                     {isLoginMode ? 'Masukkan detail untuk masuk ke workspace Anda.' : 'Mulai dengan akun lokal gratis Anda.'}
@@ -107,7 +107,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                     <label className="text-xs font-bold text-slate-900 uppercase tracking-wide ml-1">
                         Username / ID
                     </label>
-                    <div className="relative group transition-all duration-300 focus-within:scale-[1.02]">
+                    <div className="relative group focus-within:scale-[1.02] transition-transform">
                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
                             <User className="w-5 h-5" />
                         </div>
@@ -129,7 +129,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                             Kata Sandi
                         </label>
                     </div>
-                    <div className="relative group transition-all duration-300 focus-within:scale-[1.02]">
+                    <div className="relative group focus-within:scale-[1.02] transition-transform">
                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
                             <Lock className="w-5 h-5" />
                         </div>
@@ -149,8 +149,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                      <div className="p-3 bg-emerald-50 rounded-xl flex items-start gap-3 border border-emerald-100 animate-in fade-in slide-in-from-top-2">
                         <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                         <div className="text-xs text-emerald-800">
-                            <p className="font-bold">Local Account</p>
-                            <p>Data will be stored securely in your browser.</p>
+                            <p className="font-bold">Akun Lokal</p>
+                            <p>Data tersimpan aman di browser Anda.</p>
                         </div>
                      </div>
                 )}
