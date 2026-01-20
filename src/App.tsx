@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Timer, Zap, CalendarDays, Wallet, LogOut, UserCircle, Settings as SettingsIcon, LayoutDashboard, Coins } from 'lucide-react';
+import { Clock, Timer, Zap, CalendarDays, Wallet, LogOut, UserCircle, Settings as SettingsIcon, LayoutDashboard, Coins, Briefcase } from 'lucide-react';
 import { TimeAdder } from './components/TimeAdder';
 import { DurationCalculator } from './components/DurationCalculator';
 import { WageCalculator } from './components/WageCalculator';
@@ -191,10 +191,10 @@ const App: React.FC = () => {
     { id: Tab.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
     { id: Tab.RECAP, label: 'Rekap', icon: CalendarDays },
     { id: Tab.FINANCE, label: 'Keuangan', icon: Coins },
-    { id: Tab.SALARY, label: 'Input Gaji', icon: Wallet },
-    { id: Tab.ADDER, label: 'Kalkulator', icon: Clock },
+    { id: Tab.SALARY, label: 'Gaji', icon: Wallet },
+    { id: Tab.ADDER, label: 'Waktu', icon: Clock },
     { id: Tab.DURATION, label: 'Durasi', icon: Timer },
-    { id: Tab.SETTINGS, label: 'Pengaturan', icon: SettingsIcon },
+    { id: Tab.SETTINGS, label: 'Setting', icon: SettingsIcon },
   ];
 
   const renderContent = () => {
@@ -239,11 +239,12 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] relative overflow-x-hidden">
-      {/* Background Decor */}
-      <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-violet-100 to-transparent -z-10"></div>
-      <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-fuchsia-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-      <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-violet-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+    <div className="min-h-screen bg-[#F0F4F8] relative overflow-x-hidden text-slate-800 font-sans">
+      {/* Background Decor - More subtle and professional */}
+      <div className="fixed top-0 left-0 w-full h-full pointer-events-none overflow-hidden -z-10">
+          <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-indigo-200/40 rounded-full blur-[80px]"></div>
+          <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] bg-blue-100/40 rounded-full blur-[80px]"></div>
+      </div>
 
       {/* Global Alert Dialog */}
       <AlertDialog 
@@ -256,97 +257,111 @@ const App: React.FC = () => {
          confirmLabel={alertConfig.confirmLabel}
       />
 
-      <div className="max-w-4xl mx-auto px-4 py-6 sm:px-6 lg:px-8 min-h-screen flex flex-col">
+      <div className="max-w-5xl mx-auto px-4 py-6 sm:px-6 lg:px-8 min-h-screen flex flex-col">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-center mb-2 pt-2 gap-4">
-            <div className="text-center md:text-left flex items-center gap-4">
-                <div className="inline-flex items-center justify-center p-3 bg-white rounded-2xl shadow-lg shadow-violet-100">
-                    <div className="bg-gradient-to-br from-violet-500 to-fuchsia-600 text-white p-2 rounded-xl">
-                    <Zap className="w-6 h-6" fill="currentColor" />
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8 pt-2 gap-4">
+            <div className="flex items-center gap-4 w-full md:w-auto">
+                <div className="relative">
+                    <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center shadow-xl shadow-slate-200">
+                        <Zap className="w-6 h-6 text-yellow-400" fill="currentColor" />
                     </div>
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
                 </div>
                 <div>
-                    <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight leading-none">
-                        Time<span className="text-violet-600">Master</span>
+                    <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-none">
+                        TimeMaster
                     </h1>
-                    <p className="text-slate-500 font-medium text-xs mt-1">Professional Utility</p>
+                    <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-200 text-slate-600 px-2 py-0.5 rounded-md">Pro</span>
+                        <p className="text-slate-500 font-medium text-xs">Utility Suite</p>
+                    </div>
                 </div>
             </div>
 
-            <div className="flex gap-3 items-center">
-              {/* User Profile & Logout */}
-              <div className="flex items-center gap-3 bg-white/60 backdrop-blur-sm p-1.5 rounded-full border border-white/50 shadow-sm">
-                  <div className="pl-3 pr-2 flex flex-col items-end hidden sm:flex">
-                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Masuk sebagai</span>
-                      <span className="text-xs font-bold text-slate-700">{userProfile.employeeName.split(' ')[0] || currentUser}</span>
+            <div className="flex gap-4 items-center w-full md:w-auto justify-end">
+              {/* User Profile */}
+              <div className="flex items-center gap-3 bg-white pl-1 pr-4 py-1 rounded-full border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                  <div className="h-9 w-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white shadow-md">
+                      <span className="font-bold text-xs">{userProfile.employeeName.charAt(0)}</span>
                   </div>
-                  <div className="h-8 w-8 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 overflow-hidden">
-                      <UserCircle className="w-full h-full text-slate-400" />
+                  <div className="flex flex-col hidden sm:flex">
+                      <span className="text-xs font-bold text-slate-800 leading-tight">{userProfile.employeeName.split(' ')[0]}</span>
+                      <span className="text-[10px] text-slate-400 font-medium">{userProfile.employeeRole || 'User'}</span>
                   </div>
-                  <button 
-                      onClick={handleLogoutRequest}
-                      className="h-8 w-8 bg-white border border-slate-200 text-slate-400 hover:text-red-600 hover:border-red-100 hover:bg-red-50 rounded-full flex items-center justify-center transition-all"
-                      title="Keluar"
-                  >
-                      <LogOut className="w-4 h-4" />
-                  </button>
               </div>
+              
+               <button 
+                  onClick={handleLogoutRequest}
+                  className="h-10 w-10 bg-white border border-slate-200 text-slate-400 hover:text-red-600 hover:border-red-100 hover:bg-red-50 rounded-full flex items-center justify-center transition-all shadow-sm group"
+                  title="Keluar"
+              >
+                  <LogOut className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+              </button>
             </div>
         </div>
 
-        {/* Navigation Pills (Sticky & Scrollable) */}
-        <div className="sticky top-0 z-30 pt-4 pb-6 -mx-4 px-4 sm:mx-0 sm:px-0 bg-[#F8FAFC]/95 backdrop-blur-md border-b border-transparent">
-          <div className="bg-white p-1.5 rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-200 flex items-center overflow-x-auto no-scrollbar gap-1 md:justify-center md:max-w-fit md:mx-auto">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    setActiveTab(tab.id);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  className={`
-                    relative flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 flex-shrink-0
-                    ${isActive 
-                      ? 'bg-slate-800 text-white shadow-md shadow-slate-300 ring-1 ring-slate-900/5 scale-[1.02]' 
-                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}
-                  `}
-                >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-violet-300' : 'text-slate-400'}`} />
-                  <span className="whitespace-nowrap">{tab.label}</span>
-                  
-                  {/* Notification Badge for Recap */}
-                  {tab.id === Tab.RECAP && records.length > 0 && (
-                     <span className="absolute top-2 right-2 flex h-2 w-2">
-                        {isActive ? (
-                             <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500 border border-slate-800"></span>
-                        ) : (
-                             <>
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                             </>
-                        )}
-                     </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+        {/* --- MODERN NAVIGATION DOCK --- */}
+        <div className="sticky top-4 z-50 mb-8">
+            <nav className="bg-white/80 backdrop-blur-xl p-2 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60 flex flex-wrap justify-center gap-2 mx-auto max-w-fit ring-1 ring-slate-900/5">
+                {tabs.map((tab) => {
+                    const Icon = tab.icon;
+                    const isActive = activeTab === tab.id;
+                    return (
+                        <button
+                            key={tab.id}
+                            onClick={() => {
+                                setActiveTab(tab.id);
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            className={`
+                                relative flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 group overflow-hidden
+                                ${isActive ? 'text-white shadow-lg shadow-slate-900/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}
+                            `}
+                        >
+                            {/* Animated Background for Active Tab */}
+                            {isActive && (
+                                <div className="absolute inset-0 bg-slate-900 rounded-xl z-0 transition-all duration-300">
+                                    <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/10 to-transparent"></div>
+                                </div>
+                            )}
+
+                            {/* Content */}
+                            <div className="relative z-10 flex items-center gap-2">
+                                <Icon 
+                                    className={`w-4 h-4 transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-105'}`} 
+                                    strokeWidth={isActive ? 2.5 : 2}
+                                />
+                                <span className="tracking-wide">{tab.label}</span>
+                            </div>
+
+                            {/* Active Indicator Dot */}
+                            {isActive && (
+                                <span className="absolute bottom-1 w-1 h-1 bg-white/50 rounded-full z-10 shadow-sm"></span>
+                            )}
+
+                            {/* Notification Badge */}
+                            {tab.id === Tab.RECAP && records.length > 0 && (
+                                <span className="absolute top-2 right-2 flex h-2 w-2 z-20">
+                                    <span className={`relative inline-flex rounded-full h-2 w-2 ${isActive ? 'bg-rose-400' : 'bg-rose-500'}`}></span>
+                                </span>
+                            )}
+                        </button>
+                    );
+                })}
+            </nav>
         </div>
 
-        {/* Main Content Card */}
+        {/* Main Content Area */}
         <main className="flex-1 w-full pb-12">
-          <div className="transition-all duration-300 ease-in-out">
+          <div className="transition-all duration-500 ease-out">
             {renderContent()}
           </div>
         </main>
 
         {/* Footer */}
-        <footer className="text-center py-6 border-t border-slate-200/60">
+        <footer className="text-center py-8 border-t border-slate-200/60 mt-auto">
           <p className="text-xs text-slate-400 font-medium">
-            &copy; {new Date().getFullYear()} {userProfile.companyName || 'TimeMaster'}. Data disimpan secara lokal di browser Anda.
+             &copy; {new Date().getFullYear()} {userProfile.companyName || 'TimeMaster'}. Local-First Architecture.
           </p>
         </footer>
       </div>
