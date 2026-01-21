@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Plus, Check, Trash2, Calendar, Target, 
-  Briefcase, User, CheckCircle2, 
+  Briefcase, User, AlertCircle, CheckCircle2, 
   Sparkles, Pencil, X, Flag, LayoutList, Clock, 
-  Info, PartyPopper, AlarmClock, ChevronDown
+  ArrowRight, Info, PartyPopper
 } from 'lucide-react';
 import { JournalTask } from '../utils/timeUtils';
 
@@ -14,7 +14,6 @@ export const DailyJournal: React.FC = () => {
   
   // Form State
   const [newTask, setNewTask] = useState('');
-  const [scheduledTime, setScheduledTime] = useState('');
   const [category, setCategory] = useState<'work' | 'personal' | 'urgent'>('work');
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -33,11 +32,6 @@ export const DailyJournal: React.FC = () => {
         console.error("Failed to load tasks", e);
       }
     }
-    // Set default time to current time rounded to nearest 30 mins
-    const now = new Date();
-    now.setMinutes(now.getMinutes() + 30);
-    now.setMinutes(0);
-    setScheduledTime(now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }));
   }, []);
 
   // Save Tasks
@@ -52,40 +46,37 @@ export const DailyJournal: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTask.trim() || !scheduledTime) return;
+    if (!newTask.trim()) return;
 
     if (editingId) {
         // Update Existing
         setTasks(prev => prev.map(t => 
             t.id === editingId 
-            ? { ...t, text: newTask, category: category, scheduledTime: scheduledTime } 
+            ? { ...t, text: newTask, category: category } 
             : t
         ));
-        showToast('Rencana berhasil diperbarui', 'info');
+        showToast('Aktivitas berhasil diperbarui', 'info');
         setEditingId(null);
     } else {
-        // Create New
+        // Create New (Append to Bottom)
         const task: JournalTask = {
           id: Date.now().toString(),
           text: newTask,
           completed: false,
           category,
-          scheduledTime,
           createdAt: new Date().toISOString()
         };
         setTasks(prev => [...prev, task]);
-        showToast('Rencana ditambahkan ke jadwal', 'success');
+        showToast('Aktivitas baru ditambahkan ke timeline', 'success');
     }
 
     setNewTask('');
-    // Reset time to +1 hour from last input or keep current logic
   };
 
   const handleEditClick = (task: JournalTask) => {
       setEditingId(task.id);
       setNewTask(task.text);
       setCategory(task.category);
-      setScheduledTime(task.scheduledTime || '');
       window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -93,8 +84,6 @@ export const DailyJournal: React.FC = () => {
       setEditingId(null);
       setNewTask('');
       setCategory('work');
-      const now = new Date();
-      setScheduledTime(now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }));
   };
 
   const toggleTask = (id: string) => {
@@ -102,10 +91,13 @@ export const DailyJournal: React.FC = () => {
         const newTasks = prev.map(t => {
             if (t.id === id) {
                 const isCompleting = !t.completed;
+                // Motivational messages
                 if (isCompleting) {
-                    const messages = ["Hebat! Tepat waktu.", "Produktif sekali!", "Terus berkarya!", "Good job!"];
+                    const messages = ["Hebat! Satu tugas selesai.", "Produktif sekali!", "Terus berkarya!", "Good job creator!"];
                     const randomMsg = messages[Math.floor(Math.random() * messages.length)];
                     showToast(randomMsg, 'success');
+                } else {
+                    showToast('Status tugas dikembalikan', 'info');
                 }
                 return { ...t, completed: !t.completed };
             }
@@ -116,28 +108,19 @@ export const DailyJournal: React.FC = () => {
   };
 
   const deleteTask = (id: string) => {
-    if (window.confirm("Hapus rencana ini?")) {
+    if (window.confirm("Hapus aktivitas ini?")) {
         setTasks(prev => prev.filter(t => t.id !== id));
         if (editingId === id) handleCancelEdit();
-        showToast('Rencana dihapus', 'delete');
+        showToast('Aktivitas dihapus dari list', 'delete');
     }
   };
 
   const clearCompleted = () => {
     if (window.confirm("Hapus semua tugas yang sudah selesai?")) {
       setTasks(prev => prev.filter(t => !t.completed));
-      showToast('List dibersihkan', 'delete');
+      showToast('List aktivitas dibersihkan', 'delete');
     }
   };
-
-  // Sort Tasks Chronologically
-  const sortedTasks = [...tasks].sort((a, b) => {
-     // Sort by completion (unchecked first), then by scheduled time
-     if (a.completed === b.completed) {
-         return (a.scheduledTime || '').localeCompare(b.scheduledTime || '');
-     }
-     return a.completed ? 1 : -1;
-  });
 
   // Stats
   const totalTasks = tasks.length;
@@ -195,7 +178,7 @@ export const DailyJournal: React.FC = () => {
                         {greeting}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-fuchsia-600">Creator!</span>
                     </h1>
                     <p className="text-slate-500 font-medium">
-                        "Rencanakan harimu, kuasai waktumu." <br/>
+                        "Setiap ceklis kecil adalah kemenangan besar." <br/>
                         <span className="text-sm opacity-80">Selesaikan <span className="font-bold text-slate-700">{totalTasks - completedTasks}</span> tugas tersisa hari ini.</span>
                     </p>
                 </div>
@@ -228,101 +211,75 @@ export const DailyJournal: React.FC = () => {
         </div>
 
         {/* --- CREATIVE INPUT FORM --- */}
-        <div className={`rounded-[2.5rem] p-1 transition-all duration-500 ${editingId ? 'bg-gradient-to-r from-amber-200 to-orange-200 shadow-xl shadow-amber-100/50 transform scale-[1.01]' : 'bg-gradient-to-r from-slate-100 to-slate-200 shadow-lg shadow-slate-200/50'}`}>
-            <div className="bg-white rounded-[2.3rem] p-6 sm:p-8 relative overflow-hidden">
+        <div className={`rounded-[2rem] p-1 transition-all duration-500 ${editingId ? 'bg-gradient-to-r from-amber-200 to-orange-200 shadow-lg shadow-orange-100 scale-[1.01]' : 'bg-gradient-to-r from-slate-100 to-slate-200'}`}>
+            <div className="bg-white rounded-[1.8rem] p-6 sm:p-8 relative overflow-hidden">
                 
-                {/* Form Header */}
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="font-bold text-slate-700 flex items-center gap-2 text-lg">
                         {editingId ? (
-                             <div className="flex items-center gap-2 text-amber-600">
-                                <div className="p-2 bg-amber-100 rounded-lg"><Pencil className="w-5 h-5" /></div>
-                                <span>Edit Rencana</span>
-                             </div>
+                             <><Pencil className="w-5 h-5 text-amber-500" /> Mode Edit Aktivitas</>
                         ) : (
-                             <div className="flex items-center gap-2 text-indigo-600">
-                                <div className="p-2 bg-indigo-100 rounded-lg"><Sparkles className="w-5 h-5" /></div>
-                                <span>Rencana Baru</span>
-                             </div>
+                             <><Sparkles className="w-5 h-5 text-indigo-500" /> Tambah Aktivitas Baru</>
                         )}
                     </h3>
                     {editingId && (
-                        <button onClick={handleCancelEdit} className="text-xs font-bold text-slate-500 hover:text-red-500 flex items-center gap-1 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200 transition-colors">
-                            <X className="w-3.5 h-3.5" /> Batal
+                        <button onClick={handleCancelEdit} className="text-xs font-bold text-slate-400 hover:text-red-500 flex items-center gap-1 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 transition-colors">
+                            <X className="w-3.5 h-3.5" /> Batal Edit
                         </button>
                     )}
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-5">
-                    {/* Text Input */}
+                <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="relative group">
                         <textarea
                             value={newTask}
                             onChange={(e) => setNewTask(e.target.value)}
-                            placeholder="Apa yang ingin kamu selesaikan?"
-                            className="w-full min-h-[100px] bg-slate-50 border-2 border-transparent focus:border-indigo-100 rounded-2xl p-5 text-lg font-medium text-slate-700 placeholder:text-slate-400 focus:ring-0 focus:bg-white transition-all resize-none shadow-inner"
+                            placeholder="Tulis target atau kegiatan Anda di sini..."
+                            className="w-full min-h-[80px] bg-slate-50 border-0 rounded-2xl p-5 text-lg font-medium text-slate-700 placeholder:text-slate-300 focus:ring-0 focus:bg-indigo-50/30 transition-all resize-none shadow-inner"
                         />
-                    </div>
-
-                    {/* Metadata Inputs */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        
-                        {/* Time Picker */}
-                        <div className="bg-slate-50 rounded-2xl p-2 flex items-center gap-3 border border-transparent focus-within:border-indigo-200 focus-within:bg-white transition-all">
-                             <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-slate-400 border border-slate-100 ml-1">
-                                <AlarmClock className="w-5 h-5" />
-                             </div>
-                             <div className="flex-1">
-                                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wide block mb-0.5">Jam Pelaksanaan</label>
-                                <input 
-                                    type="time"
-                                    value={scheduledTime}
-                                    onChange={(e) => setScheduledTime(e.target.value)}
-                                    required
-                                    className="w-full bg-transparent font-bold text-slate-700 text-sm focus:outline-none"
-                                />
-                             </div>
-                        </div>
-
-                        {/* Category Picker */}
-                        <div className="bg-slate-50 rounded-2xl p-2 relative group border border-transparent hover:border-slate-200 transition-all">
-                             <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                                <ChevronDown className="w-4 h-4" />
-                             </div>
-                             <label className="absolute top-2.5 left-14 text-[9px] font-bold text-slate-400 uppercase tracking-wide z-10 pointer-events-none">Kategori</label>
-                             <div className="flex items-center h-full">
-                                 <div className={`w-10 h-10 rounded-xl shadow-sm flex items-center justify-center text-white border border-transparent ml-1 z-10 transition-colors ${
-                                     category === 'urgent' ? 'bg-rose-500' : category === 'personal' ? 'bg-emerald-500' : 'bg-indigo-500'
-                                 }`}>
-                                     {category === 'urgent' ? <Flag className="w-5 h-5" /> : category === 'personal' ? <User className="w-5 h-5" /> : <Briefcase className="w-5 h-5" />}
-                                 </div>
-                                 <select 
-                                    value={category}
-                                    onChange={(e) => setCategory(e.target.value as any)}
-                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
-                                 >
-                                    <option value="work">Pekerjaan</option>
-                                    <option value="personal">Pribadi</option>
-                                    <option value="urgent">Penting / Mendesak</option>
-                                 </select>
-                                 <div className="pl-3 pt-4 font-bold text-sm text-slate-700 capitalize">{category === 'work' ? 'Pekerjaan' : category === 'personal' ? 'Pribadi' : 'Penting'}</div>
-                             </div>
+                        <div className="absolute bottom-4 right-4 text-[10px] font-bold text-slate-300 pointer-events-none group-focus-within:text-indigo-300">
+                            {newTask.length} chars
                         </div>
                     </div>
 
-                    {/* Submit Button */}
-                    <button 
-                        type="submit"
-                        disabled={!newTask.trim() || !scheduledTime}
-                        className={`w-full py-4 rounded-2xl font-bold text-white shadow-lg transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none ${
-                            editingId 
-                            ? 'bg-amber-500 shadow-amber-200 hover:bg-amber-600' 
-                            : 'bg-slate-900 shadow-slate-300 hover:bg-slate-800'
-                        }`}
-                    >
-                        {editingId ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-                        {editingId ? 'Simpan Perubahan' : 'Jadwalkan Aktivitas'}
-                    </button>
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                        {/* Category Selector */}
+                        <div className="flex bg-slate-100 p-1.5 rounded-xl gap-1 w-full md:w-auto overflow-x-auto">
+                             {(['work', 'personal', 'urgent'] as const).map((c) => {
+                                 const style = getCategoryStyle(c);
+                                 const isSelected = category === c;
+                                 return (
+                                     <button
+                                        key={c}
+                                        type="button"
+                                        onClick={() => setCategory(c)}
+                                        className={`px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-all flex items-center gap-2 whitespace-nowrap ${
+                                            isSelected
+                                            ? `${style.bg} ${style.text} shadow-sm ring-1 ring-inset ${style.border}` 
+                                            : 'text-slate-400 hover:text-slate-600 hover:bg-white'
+                                        }`}
+                                     >
+                                         {style.icon}
+                                         {c === 'urgent' ? 'Penting' : (c === 'work' ? 'Pekerjaan' : 'Pribadi')}
+                                     </button>
+                                 );
+                             })}
+                        </div>
+
+                        {/* Submit Button */}
+                        <button 
+                            type="submit"
+                            disabled={!newTask.trim()}
+                            className={`w-full md:w-auto px-8 py-3.5 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none ${
+                                editingId 
+                                ? 'bg-amber-500 shadow-amber-200 hover:bg-amber-600' 
+                                : 'bg-indigo-600 shadow-indigo-200 hover:bg-indigo-700'
+                            }`}
+                        >
+                            {editingId ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+                            {editingId ? 'Simpan Perubahan' : 'Tambahkan ke List'}
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -332,7 +289,7 @@ export const DailyJournal: React.FC = () => {
             <div className="flex justify-between items-end px-2 pb-2 border-b border-slate-100">
                 <h3 className="font-bold text-slate-800 flex items-center gap-2 text-lg">
                     <LayoutList className="w-5 h-5 text-slate-400" />
-                    Jadwal Kegiatan ({totalTasks})
+                    Timeline Kegiatan ({totalTasks})
                 </h3>
                 {completedTasks > 0 && (
                     <button 
@@ -350,9 +307,9 @@ export const DailyJournal: React.FC = () => {
                     <div className="w-20 h-20 bg-indigo-50 text-indigo-300 rounded-full flex items-center justify-center mb-4 animate-bounce">
                         <Target className="w-10 h-10" />
                     </div>
-                    <h3 className="text-xl font-bold text-slate-700 mb-1">Jadwal Kosong</h3>
+                    <h3 className="text-xl font-bold text-slate-700 mb-1">List Masih Kosong</h3>
                     <p className="text-slate-400 text-sm max-w-xs text-center">
-                        Isi harimu dengan kegiatan produktif. Tentukan waktu dan mulai langkah pertama!
+                        Hari yang baru, kesempatan baru. Tambahkan target pertama Anda di atas!
                     </p>
                 </div>
             ) : (
@@ -361,26 +318,26 @@ export const DailyJournal: React.FC = () => {
                     <div className="absolute left-4 sm:left-8 top-4 bottom-4 w-0.5 bg-slate-200 border-l border-dashed border-slate-300"></div>
 
                     <div className="space-y-6">
-                        {sortedTasks.map((task, index) => {
+                        {tasks.map((task, index) => {
                              const style = getCategoryStyle(task.category);
                              return (
                                 <div key={task.id} className="relative pl-8 sm:pl-10 group">
                                     
-                                    {/* Timeline Node (Scheduled Time) */}
-                                    <div 
-                                        className={`absolute left-[-28px] sm:left-[-32px] top-4 w-16 sm:w-20 text-right pr-4 z-10 flex flex-col items-end transition-opacity ${
-                                            task.completed ? 'opacity-40' : 'opacity-100'
+                                    {/* Timeline Node (Number / Check) */}
+                                    <button 
+                                        onClick={() => toggleTask(task.id)}
+                                        className={`absolute left-[-16px] top-4 w-9 h-9 rounded-full border-4 border-[#F0F4F8] z-10 flex items-center justify-center shadow-sm transition-all duration-300 transform group-hover:scale-110 ${
+                                            task.completed 
+                                            ? 'bg-emerald-500 text-white shadow-emerald-200 rotate-0' 
+                                            : 'bg-white text-slate-500 hover:border-indigo-200 hover:text-indigo-600'
                                         }`}
                                     >
-                                        <span className="font-black text-sm text-slate-700 font-mono bg-[#F0F4F8] px-1">{task.scheduledTime}</span>
-                                    </div>
-                                    
-                                    {/* Connection Dot */}
-                                    <div className={`absolute left-[5px] sm:left-[29px] top-[22px] w-3 h-3 rounded-full border-2 border-[#F0F4F8] z-20 ${task.completed ? 'bg-emerald-500' : 'bg-indigo-500'}`}></div>
+                                        {task.completed ? <Check className="w-4 h-4" strokeWidth={4} /> : <span className="text-xs font-bold">{index + 1}</span>}
+                                    </button>
 
                                     {/* Task Card */}
                                     <div 
-                                        className={`relative overflow-hidden rounded-2xl border transition-all duration-500 ease-out group ${
+                                        className={`relative overflow-hidden rounded-2xl border transition-all duration-500 ease-out ${
                                             task.completed 
                                             ? 'bg-slate-50 border-slate-100 opacity-60 grayscale-[0.8]' 
                                             : 'bg-white border-slate-200 shadow-sm hover:shadow-lg hover:shadow-indigo-100 hover:border-indigo-200 hover:-translate-y-1'
@@ -391,18 +348,17 @@ export const DailyJournal: React.FC = () => {
 
                                         <div className="p-5 pl-7 flex flex-col sm:flex-row gap-4 sm:items-start justify-between">
                                             
-                                            <div className="flex-1 min-w-0 cursor-pointer" onClick={() => toggleTask(task.id)}>
+                                            <div className="flex-1 min-w-0">
                                                 {/* Meta Info */}
                                                 <div className="flex items-center gap-3 mb-2">
                                                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide flex items-center gap-1.5 ${style.bg} ${style.text} border ${style.border}`}>
                                                         {style.icon}
                                                         {task.category === 'urgent' ? 'Penting' : (task.category === 'work' ? 'Kerja' : 'Pribadi')}
                                                     </span>
-                                                    {task.completed && (
-                                                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 flex items-center gap-1">
-                                                            <CheckCircle2 className="w-3 h-3" /> Selesai
-                                                        </span>
-                                                    )}
+                                                    <span className="text-[10px] font-mono text-slate-400 flex items-center gap-1">
+                                                        <Clock className="w-3 h-3" />
+                                                        {new Date(task.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
                                                 </div>
 
                                                 {/* Text Content */}
@@ -427,14 +383,6 @@ export const DailyJournal: React.FC = () => {
                                                     title="Hapus"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
-                                                </button>
-                                                {/* Checkbox Trigger for Desktop hover convenience */}
-                                                <button 
-                                                    onClick={() => toggleTask(task.id)}
-                                                    className={`p-2 rounded-lg transition-all ${task.completed ? 'text-emerald-500 bg-emerald-50' : 'text-slate-300 hover:text-emerald-500 hover:bg-emerald-50'}`}
-                                                    title={task.completed ? "Batalkan Selesai" : "Tandai Selesai"}
-                                                >
-                                                    <Check className="w-4 h-4" />
                                                 </button>
                                             </div>
                                         </div>

@@ -33,7 +33,7 @@ export interface JournalTask {
   completed: boolean;
   category: 'work' | 'personal' | 'urgent';
   createdAt: string;
-  scheduledTime: string; // New field for planned time
+  scheduledTime?: string; // Made optional as requested
 }
 
 export interface UserProfile {
