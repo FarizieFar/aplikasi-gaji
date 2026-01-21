@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Calendar, Trash2, History, TrendingUp, Clock, FileText, Loader2, Printer, Files, Plus, X, Save, Calculator, ArrowRight, Wallet, Pencil, ArrowLeft, ChevronRight, CheckCircle2, Search, Filter, ChevronLeft, ArrowUpDown, Building2, MapPin } from 'lucide-react';
+import { Calendar as CalendarIcon, Trash2, History, TrendingUp, Clock, FileText, Loader2, Printer, Files, Plus, X, Save, Calculator, ArrowRight, Wallet, Pencil, ArrowLeft, ChevronRight, CheckCircle2, Search, Filter, ChevronLeft, ArrowUpDown, Building2, MapPin, LayoutGrid, List } from 'lucide-react';
 import { formatCurrency, WorkRecord, calculateDurationInHours, UserProfile, DEFAULT_PROFILE } from '../utils/timeUtils';
 import { SalarySlip } from './SalarySlip';
 
@@ -29,6 +29,10 @@ export const AttendanceRecap: React.FC<AttendanceRecapProps> = ({ records, onDel
   const [editingId, setEditingId] = useState<string | null>(null); 
   const [inputMode, setInputMode] = useState<'manual' | 'auto'>('auto'); 
   
+  // View Mode State (List or Calendar)
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  const [calendarDate, setCalendarDate] = useState(new Date());
+
   // Toast State
   const [toast, setToast] = useState<{ show: boolean; message: string }>({ show: false, message: '' });
 
@@ -176,10 +180,32 @@ export const AttendanceRecap: React.FC<AttendanceRecapProps> = ({ records, onDel
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleCancelInput = () => {
+  // Click on Calendar Day to add new record or edit existing
+  const handleCalendarDayClick = (day: number) => {
+      const year = calendarDate.getFullYear();
+      const month = calendarDate.getMonth();
+      // Format as YYYY-MM-DD manually to avoid timezone shift issues
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      
+      // Check if records exist for this day
+      const existing = records.find(r => r.date.startsWith(dateStr));
+      
+      if (existing) {
+          handleEditClick(existing);
+      } else {
+          setEditingId(null);
+          setInputDate(dateStr);
+          setShowInputForm(true);
+          handleCancelInput(false); // Reset form but keep date
+          setInputDate(dateStr); // Re-set date after reset
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancelInput = (shouldResetDate = true) => {
     setShowInputForm(false);
     setEditingId(null);
-    setInputDate(new Date().toISOString().split('T')[0]);
+    if (shouldResetDate) setInputDate(new Date().toISOString().split('T')[0]);
     setInputStartTime('08:00');
     setInputEndTime('17:00');
     setInputRate(userProfile.defaultRate);
@@ -232,6 +258,88 @@ export const AttendanceRecap: React.FC<AttendanceRecapProps> = ({ records, onDel
 
     handleCancelInput(); 
   };
+
+  // --- CALENDAR LOGIC ---
+  const renderCalendar = () => {
+    const year = calendarDate.getFullYear();
+    const month = calendarDate.getMonth();
+    
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const startDay = new Date(year, month, 1).getDay(); // 0 = Sunday
+    
+    const days = [];
+    
+    // Empty cells for days before start of month
+    for (let i = 0; i < startDay; i++) {
+        days.push(<div key={`empty-${i}`} className="h-24 sm:h-32 bg-slate-50/30 border border-slate-100/50 rounded-xl"></div>);
+    }
+    
+    // Day cells
+    for (let i = 1; i <= daysInMonth; i++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+        // Find records for this day (summing up if multiple)
+        const dayRecords = records.filter(r => r.date.startsWith(dateStr));
+        const dayTotalHours = dayRecords.reduce((acc, r) => acc + r.totalHoursDecimal, 0);
+        const dayTotalWage = dayRecords.reduce((acc, r) => acc + r.totalWage, 0);
+        const hasData = dayRecords.length > 0;
+        const isToday = new Date().toDateString() === new Date(year, month, i).toDateString();
+
+        days.push(
+            <div 
+                key={i} 
+                onClick={() => handleCalendarDayClick(i)}
+                className={`
+                    relative h-24 sm:h-32 rounded-xl border p-2 flex flex-col justify-between transition-all cursor-pointer group
+                    ${hasData ? 'bg-white border-indigo-100 hover:border-indigo-300 hover:shadow-md' : 'bg-slate-50 border-slate-100 hover:bg-white hover:border-slate-200'}
+                    ${isToday ? 'ring-2 ring-indigo-500 ring-offset-2' : ''}
+                `}
+            >
+                <div className="flex justify-between items-start">
+                    <span className={`
+                        text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full
+                        ${hasData ? 'bg-indigo-600 text-white' : 'text-slate-400'}
+                        ${isToday && !hasData ? 'bg-indigo-500 text-white' : ''}
+                    `}>
+                        {i}
+                    </span>
+                    {hasData && (
+                        <div className="p-1 bg-emerald-100 rounded-full">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                        </div>
+                    )}
+                </div>
+
+                {hasData && (
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-1 rounded-md">
+                            <Clock className="w-3 h-3" />
+                            <span className="text-[10px] font-bold">{dayTotalHours.toFixed(1)}h</span>
+                        </div>
+                        <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md">
+                            <Wallet className="w-3 h-3" />
+                            <span className="text-[10px] font-bold truncate">
+                                {dayTotalWage >= 1000 ? (dayTotalWage/1000).toFixed(0) + 'k' : dayTotalWage}
+                            </span>
+                        </div>
+                    </div>
+                )}
+                
+                {!hasData && (
+                    <div className="flex items-center justify-center h-full opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Plus className="w-6 h-6 text-slate-300" />
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    return days;
+  };
+
+  const changeMonth = (offset: number) => {
+      setCalendarDate(prev => new Date(prev.getFullYear(), prev.getMonth() + offset, 1));
+  };
+
 
   const handleExportRecap = async () => {
     if (filteredAndSortedRecords.length === 0) {
@@ -384,7 +492,7 @@ export const AttendanceRecap: React.FC<AttendanceRecapProps> = ({ records, onDel
          <ToastAlert />
          {/* Navigation Header */}
          <button 
-            onClick={handleCancelInput}
+            onClick={() => handleCancelInput(true)}
             className="flex items-center gap-2 text-slate-500 hover:text-indigo-600 transition-colors mb-6 group font-bold text-sm"
          >
             <div className="p-2 bg-white rounded-full shadow-sm border border-slate-200 group-hover:border-indigo-200 group-hover:bg-indigo-50">
@@ -393,7 +501,7 @@ export const AttendanceRecap: React.FC<AttendanceRecapProps> = ({ records, onDel
             Kembali ke Daftar
          </button>
 
-         <div className="bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 overflow-hidden border border-slate-100 transition-colors">
+         <div className="bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 overflow-hidden border border-slate-100">
             {/* Form Header */}
             <div className="bg-slate-50/80 border-b border-slate-100 p-6 sm:p-8">
                <div className="flex items-center gap-4">
@@ -508,7 +616,7 @@ export const AttendanceRecap: React.FC<AttendanceRecapProps> = ({ records, onDel
                       )}
                   </div>
                   <div className="md:col-span-5">
-                      <div className="bg-slate-900 rounded-3xl p-6 text-white relative overflow-hidden h-full flex flex-col justify-between border border-transparent">
+                      <div className="bg-slate-900 rounded-3xl p-6 text-white relative overflow-hidden h-full flex flex-col justify-between">
                           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500 rounded-full mix-blend-overlay filter blur-3xl opacity-20"></div>
                           <div className="relative z-10">
                               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Ringkasan Kalkulasi</p>
@@ -544,7 +652,7 @@ export const AttendanceRecap: React.FC<AttendanceRecapProps> = ({ records, onDel
             {/* Footer Action */}
             <div className="bg-slate-50 p-6 sm:p-8 flex items-center justify-end gap-4 border-t border-slate-100">
                <button 
-                  onClick={handleCancelInput}
+                  onClick={() => handleCancelInput(true)}
                   className="px-6 py-3 rounded-xl font-bold text-slate-500 hover:bg-white hover:text-slate-700 transition-all border border-transparent hover:border-slate-200"
                >
                   Batalkan
@@ -564,7 +672,7 @@ export const AttendanceRecap: React.FC<AttendanceRecapProps> = ({ records, onDel
     );
   }
 
-  // --- VIEW: LIST (DEFAULT) ---
+  // --- VIEW: LIST / CALENDAR (DEFAULT) ---
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12">
       <ToastAlert />
@@ -573,7 +681,7 @@ export const AttendanceRecap: React.FC<AttendanceRecapProps> = ({ records, onDel
       <div className="space-y-6">
         
         {/* Header Statistics Card */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-indigo-100 border border-white relative overflow-hidden transition-colors">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-indigo-100 border border-white relative overflow-hidden">
            {/* ... Header content ... */}
            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-full mix-blend-multiply filter blur-3xl opacity-50 -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
            
@@ -589,6 +697,24 @@ export const AttendanceRecap: React.FC<AttendanceRecapProps> = ({ records, onDel
               </div>
 
               <div className="flex flex-wrap gap-2 w-full md:w-auto">
+                {/* View Toggle */}
+                <div className="flex bg-slate-100 p-1 rounded-xl mr-2">
+                    <button 
+                        onClick={() => setViewMode('list')}
+                        className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white shadow text-slate-800' : 'text-slate-400 hover:text-slate-600'}`}
+                        title="Tampilan Daftar"
+                    >
+                        <List className="w-4 h-4" />
+                    </button>
+                    <button 
+                        onClick={() => setViewMode('calendar')}
+                        className={`p-2 rounded-lg transition-all ${viewMode === 'calendar' ? 'bg-white shadow text-slate-800' : 'text-slate-400 hover:text-slate-600'}`}
+                        title="Tampilan Kalender"
+                    >
+                        <LayoutGrid className="w-4 h-4" />
+                    </button>
+                </div>
+
                 <button 
                   onClick={() => {
                       setEditingId(null);
@@ -603,6 +729,7 @@ export const AttendanceRecap: React.FC<AttendanceRecapProps> = ({ records, onDel
               </div>
            </div>
 
+           {/* Stats Summary */}
            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
               <div className="bg-gradient-to-br from-indigo-600 to-violet-700 rounded-2xl p-6 text-white shadow-lg shadow-indigo-200">
                  <div className="flex items-center gap-2 mb-2 text-indigo-100 text-xs font-bold uppercase tracking-wider">
@@ -624,57 +751,75 @@ export const AttendanceRecap: React.FC<AttendanceRecapProps> = ({ records, onDel
            </div>
         </div>
         
-        {/* --- SEARCH & FILTER TOOLBAR --- */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4 justify-between transition-colors">
-            <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl w-full md:w-auto overflow-x-auto border border-slate-100">
-                <div className="flex items-center px-3 text-slate-400">
-                    <Filter className="w-4 h-4" />
-                </div>
-                <input 
-                    type="date" 
-                    value={filterStartDate}
-                    onChange={(e) => setFilterStartDate(e.target.value)}
-                    className="bg-white border-0 text-xs font-bold text-slate-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-indigo-200 shadow-sm"
-                    placeholder="Mulai"
-                />
-                <span className="text-slate-300 text-xs font-bold">-</span>
-                <input 
-                    type="date" 
-                    value={filterEndDate}
-                    onChange={(e) => setFilterEndDate(e.target.value)}
-                    className="bg-white border-0 text-xs font-bold text-slate-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-indigo-200 shadow-sm"
-                    placeholder="Sampai"
-                />
-            </div>
-            
-            <div className="flex gap-2 w-full md:w-auto">
-                <div className="relative flex-1 md:w-64">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        {/* --- SEARCH & FILTER TOOLBAR (List Mode Only) --- */}
+        {viewMode === 'list' && (
+            <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4 justify-between">
+                <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl w-full md:w-auto overflow-x-auto">
+                    <div className="flex items-center px-3 text-slate-400">
+                        <Filter className="w-4 h-4" />
+                    </div>
                     <input 
-                        type="text" 
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Cari tanggal atau nominal..."
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-9 pr-4 text-xs font-bold text-slate-700 focus:outline-none focus:bg-white focus:border-indigo-300 transition-colors h-full"
+                        type="date" 
+                        value={filterStartDate}
+                        onChange={(e) => setFilterStartDate(e.target.value)}
+                        className="bg-white border-0 text-xs font-bold text-slate-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-indigo-200 shadow-sm"
+                        placeholder="Mulai"
+                    />
+                    <span className="text-slate-300 text-xs font-bold">-</span>
+                    <input 
+                        type="date" 
+                        value={filterEndDate}
+                        onChange={(e) => setFilterEndDate(e.target.value)}
+                        className="bg-white border-0 text-xs font-bold text-slate-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-indigo-200 shadow-sm"
+                        placeholder="Sampai"
                     />
                 </div>
-                <button 
-                    onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
-                    className="px-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-100 transition-colors flex items-center justify-center"
-                    title="Urutkan Tanggal"
-                >
-                    <ArrowUpDown className="w-4 h-4" />
-                </button>
+                
+                <div className="flex gap-2 w-full md:w-auto">
+                    <div className="relative flex-1 md:w-64">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input 
+                            type="text" 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Cari tanggal atau nominal..."
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-9 pr-4 text-xs font-bold text-slate-700 focus:outline-none focus:bg-white focus:border-indigo-300 transition-colors h-full"
+                        />
+                    </div>
+                    <button 
+                        onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
+                        className="px-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-100 transition-colors flex items-center justify-center"
+                        title="Urutkan Tanggal"
+                    >
+                        <ArrowUpDown className="w-4 h-4" />
+                    </button>
+                </div>
             </div>
-        </div>
+        )}
 
-        {/* List / Table */}
-        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden transition-colors">
+        {/* --- MAIN CONTENT AREA --- */}
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+          
+          {/* Main Header (Toolbar) */}
           <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-slate-400" />
-                <span className="text-sm font-bold text-slate-600 uppercase tracking-wide">Riwayat Harian</span>
+                <CalendarIcon className="w-4 h-4 text-slate-400" />
+                <span className="text-sm font-bold text-slate-600 uppercase tracking-wide">
+                    {viewMode === 'list' ? 'Riwayat Harian' : 'Kalender Kerja'}
+                </span>
              </div>
+             
+             {/* Calendar Navigation */}
+             {viewMode === 'calendar' && (
+                 <div className="flex items-center gap-4">
+                     <button onClick={() => changeMonth(-1)} className="p-1 hover:bg-slate-200 rounded-lg transition-colors"><ChevronLeft className="w-4 h-4" /></button>
+                     <span className="text-sm font-bold text-slate-800">
+                         {calendarDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
+                     </span>
+                     <button onClick={() => changeMonth(1)} className="p-1 hover:bg-slate-200 rounded-lg transition-colors"><ChevronRight className="w-4 h-4" /></button>
+                 </div>
+             )}
+
              <div className="flex gap-2">
                 {records.length > 0 && (
                   <>
@@ -702,133 +847,155 @@ export const AttendanceRecap: React.FC<AttendanceRecapProps> = ({ records, onDel
              </div>
           </div>
 
-          {paginatedRecords.length === 0 ? (
-            <div className="p-12 text-center text-slate-400">
-              <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Calendar className="w-8 h-8 opacity-20" />
+          {/* --- CONTENT BODY --- */}
+          {viewMode === 'calendar' ? (
+              // CALENDAR VIEW
+              <div className="p-4 sm:p-6">
+                  {/* Days of Week Header */}
+                  <div className="grid grid-cols-7 mb-2">
+                      {['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map(d => (
+                          <div key={d} className="text-center text-xs font-bold text-slate-400 uppercase py-2">
+                              {d}
+                          </div>
+                      ))}
+                  </div>
+                  {/* Calendar Grid */}
+                  <div className="grid grid-cols-7 gap-2">
+                      {renderCalendar()}
+                  </div>
               </div>
-              <p className="font-semibold text-slate-600">
-                  {records.length === 0 ? "Belum ada data absensi." : "Tidak ada data yang cocok dengan filter."}
-              </p>
-              {records.length === 0 && (
-                <div className="mt-4">
-                   <button 
-                     onClick={() => {
-                         setShowInputForm(true);
-                         window.scrollTo({ top: 0, behavior: 'smooth' });
-                     }}
-                     className="px-6 py-2 bg-indigo-600 text-white rounded-full text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all"
-                   >
-                     Input Data Sekarang
-                   </button>
+          ) : (
+            // LIST VIEW
+            <>
+              {paginatedRecords.length === 0 ? (
+                <div className="p-12 text-center text-slate-400">
+                  <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CalendarIcon className="w-8 h-8 opacity-20" />
+                  </div>
+                  <p className="font-semibold text-slate-600">
+                      {records.length === 0 ? "Belum ada data absensi." : "Tidak ada data yang cocok dengan filter."}
+                  </p>
+                  {records.length === 0 && (
+                    <div className="mt-4">
+                      <button 
+                        onClick={() => {
+                            setShowInputForm(true);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className="px-6 py-2 bg-indigo-600 text-white rounded-full text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all"
+                      >
+                        Input Data Sekarang
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left">
+                    <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-bold">
+                      <tr>
+                        <th className="px-6 py-4 w-12 text-center">No</th>
+                        <th className="px-6 py-4">Tanggal</th>
+                        <th className="px-6 py-4">Jam Kerja</th>
+                        <th className="px-6 py-4 text-center">Durasi</th>
+                        <th className="px-6 py-4 text-right">Total</th>
+                        <th className="px-6 py-4 text-center">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {paginatedRecords.map((rec, index) => (
+                        <tr key={rec.id} className="hover:bg-slate-50 transition-colors group">
+                          <td className="px-6 py-4 text-center font-bold text-slate-300">
+                            {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
+                          </td>
+                          <td className="px-6 py-4 font-medium text-slate-700">
+                            <div className="flex flex-col">
+                              <span>{new Date(rec.date).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+                              <span className="text-[10px] text-slate-400 font-normal">
+                                {new Date(rec.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-slate-600">
+                            {rec.mode === 'range' ? (
+                              <div className="flex flex-col">
+                                <span className="font-mono text-xs font-semibold bg-slate-100 px-2 py-0.5 rounded w-fit">{rec.startTime} - {rec.endTime}</span>
+                                <span className="text-[10px] text-slate-400 mt-1">Break: {rec.breakMinutes}m</span>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col">
+                                  <span className="text-[10px] bg-amber-50 text-amber-600 border border-amber-100 px-2 py-1 rounded font-bold uppercase tracking-wide w-fit mb-1">
+                                      Manual
+                                  </span>
+                                  <span className="text-[10px] text-slate-400 font-mono">
+                                    {rec.hoursInput}j {rec.minutesInput}m
+                                  </span>
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span className="font-bold text-slate-700">{formatDecimalToHM(rec.totalHoursDecimal)}</span>
+                          </td>
+                          <td className="px-6 py-4 text-right font-bold text-emerald-600 font-mono text-base">
+                            {formatCurrency(rec.totalWage).replace(',00', '')}
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              <button 
+                                onClick={() => handleEditClick(rec)}
+                                className="p-2 rounded-lg transition-all text-slate-300 hover:text-amber-600 hover:bg-amber-50"
+                                title="Edit Data"
+                              >
+                                  <Pencil className="w-4 h-4" />
+                              </button>
+
+                              <button 
+                                onClick={() => handleExportSlip(rec)}
+                                disabled={generatingSlipId === rec.id}
+                                className="p-2 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                title="Download Slip Gaji PDF"
+                              >
+                                {generatingSlipId === rec.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+                              </button>
+                              <button 
+                                onClick={() => onDelete(rec.id)}
+                                className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                title="Hapus Data"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {totalPages > 1 && (
+                      <div className="p-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
+                        <p className="text-xs text-slate-500 font-medium">
+                            Halaman {currentPage} dari {totalPages}
+                        </p>
+                        <div className="flex gap-2">
+                            <button 
+                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                disabled={currentPage === 1}
+                                className="p-2 bg-white border border-slate-200 rounded-lg text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 disabled:opacity-50 disabled:pointer-events-none transition-all shadow-sm"
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                            </button>
+                            <button 
+                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                disabled={currentPage === totalPages}
+                                className="p-2 bg-white border border-slate-200 rounded-lg text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 disabled:opacity-50 disabled:pointer-events-none transition-all shadow-sm"
+                            >
+                                <ChevronRight className="w-4 h-4" />
+                            </button>
+                        </div>
+                      </div>
+                  )}
                 </div>
               )}
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-bold">
-                  <tr>
-                    <th className="px-6 py-4 w-12 text-center">No</th>
-                    <th className="px-6 py-4">Tanggal</th>
-                    <th className="px-6 py-4">Jam Kerja</th>
-                    <th className="px-6 py-4 text-center">Durasi</th>
-                    <th className="px-6 py-4 text-right">Total</th>
-                    <th className="px-6 py-4 text-center">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {paginatedRecords.map((rec, index) => (
-                    <tr key={rec.id} className="hover:bg-slate-50 transition-colors group">
-                      <td className="px-6 py-4 text-center font-bold text-slate-300">
-                        {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
-                      </td>
-                      <td className="px-6 py-4 font-medium text-slate-700">
-                        <div className="flex flex-col">
-                           <span>{new Date(rec.date).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
-                           <span className="text-[10px] text-slate-400 font-normal">
-                             {new Date(rec.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                           </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-slate-600">
-                        {rec.mode === 'range' ? (
-                          <div className="flex flex-col">
-                            <span className="font-mono text-xs font-semibold bg-slate-100 px-2 py-0.5 rounded w-fit">{rec.startTime} - {rec.endTime}</span>
-                            <span className="text-[10px] text-slate-400 mt-1">Break: {rec.breakMinutes}m</span>
-                          </div>
-                        ) : (
-                          <div className="flex flex-col">
-                              <span className="text-[10px] bg-amber-50 text-amber-600 border border-amber-100 px-2 py-1 rounded font-bold uppercase tracking-wide w-fit mb-1">
-                                  Manual
-                              </span>
-                              <span className="text-[10px] text-slate-400 font-mono">
-                                {rec.hoursInput}j {rec.minutesInput}m
-                              </span>
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <span className="font-bold text-slate-700">{formatDecimalToHM(rec.totalHoursDecimal)}</span>
-                      </td>
-                      <td className="px-6 py-4 text-right font-bold text-emerald-600 font-mono text-base">
-                        {formatCurrency(rec.totalWage).replace(',00', '')}
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <div className="flex items-center justify-center gap-2">
-                           <button 
-                             onClick={() => handleEditClick(rec)}
-                             className="p-2 rounded-lg transition-all text-slate-300 hover:text-amber-600 hover:bg-amber-50"
-                             title="Edit Data"
-                           >
-                              <Pencil className="w-4 h-4" />
-                           </button>
-
-                           <button 
-                             onClick={() => handleExportSlip(rec)}
-                             disabled={generatingSlipId === rec.id}
-                             className="p-2 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                             title="Download Slip Gaji PDF"
-                           >
-                             {generatingSlipId === rec.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-                           </button>
-                           <button 
-                             onClick={() => onDelete(rec.id)}
-                             className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                             title="Hapus Data"
-                           >
-                             <Trash2 className="w-4 h-4" />
-                           </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {totalPages > 1 && (
-                  <div className="p-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
-                     <p className="text-xs text-slate-500 font-medium">
-                         Halaman {currentPage} dari {totalPages}
-                     </p>
-                     <div className="flex gap-2">
-                         <button 
-                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                            disabled={currentPage === 1}
-                            className="p-2 bg-white border border-slate-200 rounded-lg text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 disabled:opacity-50 disabled:pointer-events-none transition-all shadow-sm"
-                         >
-                             <ChevronLeft className="w-4 h-4" />
-                         </button>
-                         <button 
-                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                            disabled={currentPage === totalPages}
-                            className="p-2 bg-white border border-slate-200 rounded-lg text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 disabled:opacity-50 disabled:pointer-events-none transition-all shadow-sm"
-                         >
-                             <ChevronRight className="w-4 h-4" />
-                         </button>
-                     </div>
-                  </div>
-              )}
-            </div>
+            </>
           )}
         </div>
       </div>
