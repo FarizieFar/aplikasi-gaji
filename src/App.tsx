@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Timer, Zap, CalendarDays, Wallet, LogOut, UserCircle, Settings as SettingsIcon, LayoutDashboard, Coins, Briefcase } from 'lucide-react';
+import { Clock, Timer, Zap, CalendarDays, Wallet, LogOut, UserCircle, Settings as SettingsIcon, LayoutDashboard, Coins, Briefcase, ClipboardList } from 'lucide-react';
 import { TimeAdder } from './components/TimeAdder';
 import { DurationCalculator } from './components/DurationCalculator';
 import { WageCalculator } from './components/WageCalculator';
@@ -8,12 +8,14 @@ import { LoginScreen } from './components/LoginScreen';
 import { Settings } from './components/Settings';
 import { FinanceTracker } from './components/FinanceTracker';
 import { Dashboard } from './components/Dashboard';
+import { DailyJournal } from './components/DailyJournal';
 import { WorkRecord, UserProfile, DEFAULT_PROFILE, generateEmployeeId } from './utils/timeUtils';
 import { AlertDialog, AlertType } from './components/ui/AlertDialog';
 
 enum Tab {
   DASHBOARD = 'dashboard',
   RECAP = 'recap',
+  JOURNAL = 'journal',
   FINANCE = 'finance',
   SALARY = 'salary',
   ADDER = 'adder',
@@ -190,6 +192,7 @@ const App: React.FC = () => {
   const tabs = [
     { id: Tab.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
     { id: Tab.RECAP, label: 'Rekap', icon: CalendarDays },
+    { id: Tab.JOURNAL, label: 'Aktivitas', icon: ClipboardList },
     { id: Tab.FINANCE, label: 'Keuangan', icon: Coins },
     { id: Tab.SALARY, label: 'Gaji', icon: Wallet },
     { id: Tab.ADDER, label: 'Waktu', icon: Clock },
@@ -224,6 +227,8 @@ const App: React.FC = () => {
                 onRotateEmployeeId={handleRotateEmployeeId} 
             />
         );
+      case Tab.JOURNAL:
+        return <DailyJournal />;
       case Tab.SETTINGS:
         return <Settings currentProfile={userProfile} onSave={handleSaveProfile} onImportData={handleImportData} currentRecords={records} />;
       case Tab.FINANCE:
