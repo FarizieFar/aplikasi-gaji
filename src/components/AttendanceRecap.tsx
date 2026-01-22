@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Calendar as CalendarIcon, Trash2, History, TrendingUp, Clock, FileText, Loader2, Printer, Files, Plus, X, Save, Calculator, ArrowRight, Wallet, Pencil, ArrowLeft, ChevronRight, CheckCircle2, Search, Filter, ChevronLeft, ArrowUpDown, Building2, MapPin, LayoutGrid, List } from 'lucide-react';
 import { formatCurrency, WorkRecord, calculateDurationInHours, UserProfile, DEFAULT_PROFILE } from '../utils/timeUtils';
@@ -488,7 +489,7 @@ export const AttendanceRecap: React.FC<AttendanceRecapProps> = ({ records, onDel
   // --- VIEW: FORM INPUT ---
   if (showInputForm) {
     return (
-      <div className="max-w-4xl mx-auto pb-12 animate-in fade-in slide-in-from-right-4 duration-300">
+      <div className="w-full pb-12 animate-in fade-in slide-in-from-right-4 duration-300">
          <ToastAlert />
          {/* Navigation Header */}
          <button 
@@ -501,7 +502,7 @@ export const AttendanceRecap: React.FC<AttendanceRecapProps> = ({ records, onDel
             Kembali ke Daftar
          </button>
 
-         <div className="bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 overflow-hidden border border-slate-100">
+         <div className="bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 overflow-hidden border border-slate-100 max-w-5xl mx-auto">
             {/* Form Header */}
             <div className="bg-slate-50/80 border-b border-slate-100 p-6 sm:p-8">
                <div className="flex items-center gap-4">
@@ -674,18 +675,18 @@ export const AttendanceRecap: React.FC<AttendanceRecapProps> = ({ records, onDel
 
   // --- VIEW: LIST / CALENDAR (DEFAULT) ---
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-12">
+    <div className="w-full space-y-6 pb-12">
       <ToastAlert />
       
       {/* Container for Main Content */}
       <div className="space-y-6">
         
         {/* Header Statistics Card */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-indigo-100 border border-white relative overflow-hidden">
+        <div className="bg-white rounded-[2rem] p-8 shadow-xl shadow-indigo-100 border border-white relative overflow-hidden">
            {/* ... Header content ... */}
            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-full mix-blend-multiply filter blur-3xl opacity-50 -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
            
-           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 relative z-10 gap-4">
+           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 relative z-10 gap-4">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 bg-indigo-100 text-indigo-600 rounded-xl">
                   <History className="w-5 h-5" />
@@ -798,7 +799,7 @@ export const AttendanceRecap: React.FC<AttendanceRecapProps> = ({ records, onDel
         )}
 
         {/* --- MAIN CONTENT AREA --- */}
-        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
           
           {/* Main Header (Toolbar) */}
           <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">

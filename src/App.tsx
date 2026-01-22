@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Clock, Timer, Zap, CalendarDays, Wallet, LogOut, UserCircle, Settings as SettingsIcon, LayoutDashboard, Coins, Briefcase, ClipboardList, ShoppingBag } from 'lucide-react';
+import { Clock, Timer, Zap, CalendarDays, Wallet, LogOut, UserCircle, Settings as SettingsIcon, LayoutDashboard, Coins, Briefcase, ClipboardList, ShoppingBag, Menu } from 'lucide-react';
 import { TimeAdder } from './components/TimeAdder';
 import { DurationCalculator } from './components/DurationCalculator';
 import { WageCalculator } from './components/WageCalculator';
@@ -39,6 +39,7 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>(Tab.DASHBOARD);
   const [records, setRecords] = useState<WorkRecord[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile>(DEFAULT_PROFILE);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Alert Dialog State
   const [alertConfig, setAlertConfig] = useState<{
@@ -250,11 +251,11 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F0F4F8] relative overflow-x-hidden text-slate-800 font-sans">
-      {/* Background Decor - More subtle and professional */}
+    <div className="min-h-screen bg-[#F8FAFC] relative font-sans flex flex-col">
+      {/* Background Decor */}
       <div className="fixed top-0 left-0 w-full h-full pointer-events-none overflow-hidden -z-10">
-          <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-indigo-200/40 rounded-full blur-[80px]"></div>
-          <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] bg-blue-100/40 rounded-full blur-[80px]"></div>
+          <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-indigo-100/50 rounded-full blur-[80px]"></div>
+          <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] bg-blue-100/50 rounded-full blur-[80px]"></div>
       </div>
 
       {/* Global Alert Dialog */}
@@ -268,100 +269,140 @@ const App: React.FC = () => {
          confirmLabel={alertConfig.confirmLabel}
       />
 
-      <div className="max-w-5xl mx-auto px-4 py-6 sm:px-6 lg:px-8 min-h-screen flex flex-col">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-center mb-6 pt-2 gap-4">
-            <div className="flex items-center gap-4 w-full md:w-auto">
-                <div className="relative">
-                    <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center shadow-xl shadow-slate-200">
-                        <Zap className="w-6 h-6 text-yellow-400" fill="currentColor" />
-                    </div>
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
-                </div>
-                <div>
-                    <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-none">
-                        TimeMaster
-                    </h1>
-                    <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-200 text-slate-600 px-2 py-0.5 rounded-md">Pro</span>
-                        <p className="text-slate-500 font-medium text-xs">Utility Suite</p>
-                    </div>
-                </div>
-            </div>
-
-            <div className="flex gap-4 items-center w-full md:w-auto justify-end">
-              {/* User Profile */}
-              <div className="flex items-center gap-3 bg-white pl-1 pr-4 py-1 rounded-full border border-slate-200 shadow-sm hover:shadow-md transition-all">
-                  <div className="h-9 w-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white shadow-md">
-                      <span className="font-bold text-xs">{userProfile.employeeName.charAt(0)}</span>
+      {/* --- FULL WIDTH STICKY HEADER --- */}
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 shadow-sm">
+          <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+              
+              {/* Logo Section */}
+              <div className="flex items-center gap-3 min-w-fit">
+                  <div className="relative">
+                      <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center shadow-lg shadow-slate-200">
+                          <Zap className="w-5 h-5 text-yellow-400" fill="currentColor" />
+                      </div>
+                      <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
                   </div>
-                  <div className="flex flex-col hidden sm:flex">
-                      <span className="text-xs font-bold text-slate-800 leading-tight">{userProfile.employeeName.split(' ')[0]}</span>
-                      <span className="text-[10px] text-slate-400 font-medium">{userProfile.employeeRole || 'User'}</span>
+                  <div className="hidden sm:block">
+                      <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">
+                          TimeMaster
+                      </h1>
+                      <div className="flex items-center gap-2">
+                         <span className="text-[9px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded">Ent</span>
+                         <span className="text-xs text-slate-400 font-medium">Workspace</span>
+                      </div>
                   </div>
               </div>
-              
-               <button 
-                  onClick={handleLogoutRequest}
-                  className="h-10 w-10 bg-white border border-slate-200 text-slate-400 hover:text-red-600 hover:border-red-100 hover:bg-red-50 rounded-full flex items-center justify-center transition-all shadow-sm group"
-                  title="Keluar"
-              >
-                  <LogOut className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-              </button>
-            </div>
-        </div>
 
-        {/* --- MODERN FLOATING NAVIGATION --- */}
-        <div className="sticky top-4 z-40 mb-8 mx-auto max-w-full">
-            <nav className="relative bg-white/70 backdrop-blur-2xl border border-white/50 p-1.5 rounded-[2rem] shadow-xl shadow-slate-200/40 ring-1 ring-white/60">
-                <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide py-1 px-1 snap-x [&::-webkit-scrollbar]:hidden">
-                    {tabs.map((tab) => {
-                        const Icon = tab.icon;
-                        const isActive = activeTab === tab.id;
-                        return (
-                            <button
-                                key={tab.id}
-                                onClick={() => {
-                                    setActiveTab(tab.id);
-                                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                                }}
-                                className={`
-                                    relative flex-shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-[1.5rem] text-xs font-bold transition-all duration-300 snap-center
-                                    ${isActive 
-                                        ? 'bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 text-white shadow-lg shadow-indigo-500/30 scale-105 ring-2 ring-white ring-opacity-50' 
-                                        : 'text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-sm'}
-                                `}
-                            >
-                                <Icon 
-                                    className={`w-4 h-4 transition-transform duration-300 ${isActive ? 'scale-110 rotate-0' : 'group-hover:scale-105'}`} 
-                                    strokeWidth={isActive ? 2.5 : 2}
-                                />
-                                <span className="tracking-wide whitespace-nowrap">{tab.label}</span>
-                                
-                                {tab.id === Tab.RECAP && records.length > 0 && (
-                                    <span className={`absolute top-2 right-2 flex h-2 w-2 ${isActive ? 'bg-white' : 'bg-rose-500'} rounded-full animate-pulse`}></span>
-                                )}
-                            </button>
-                        );
-                    })}
-                </div>
-            </nav>
-        </div>
+              {/* Desktop Navigation (Center) */}
+              <nav className="hidden xl:flex items-center justify-center gap-1 bg-slate-100/50 p-1.5 rounded-2xl border border-slate-200/60">
+                  {tabs.map((tab) => {
+                      const Icon = tab.icon;
+                      const isActive = activeTab === tab.id;
+                      return (
+                          <button
+                              key={tab.id}
+                              onClick={() => {
+                                  setActiveTab(tab.id);
+                                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                              }}
+                              className={`
+                                  relative flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300
+                                  ${isActive 
+                                      ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200 scale-[1.02]' 
+                                      : 'text-slate-500 hover:text-slate-800 hover:bg-white/60'}
+                              `}
+                          >
+                              <Icon className={`w-4 h-4 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
+                              <span>{tab.label}</span>
+                              {tab.id === Tab.RECAP && records.length > 0 && (
+                                  <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-rose-500 rounded-full"></span>
+                              )}
+                          </button>
+                      );
+                  })}
+              </nav>
 
-        {/* Main Content Area */}
-        <main className="flex-1 w-full pb-12">
-          <div className="transition-all duration-500 ease-out">
-            {renderContent()}
+              {/* Right Side: Profile & Mobile Menu */}
+              <div className="flex items-center gap-3 min-w-fit justify-end">
+                  
+                  {/* User Profile Pill */}
+                  <div className="hidden md:flex items-center gap-3 bg-white pl-1 pr-4 py-1 rounded-full border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-default">
+                      <div className="h-9 w-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white shadow-md">
+                          <span className="font-bold text-xs">{userProfile.employeeName.charAt(0)}</span>
+                      </div>
+                      <div className="flex flex-col">
+                          <span className="text-xs font-bold text-slate-800 leading-tight">{userProfile.employeeName}</span>
+                          <span className="text-[9px] text-slate-400 font-medium">{userProfile.employeeRole || 'User'}</span>
+                      </div>
+                  </div>
+
+                  <button 
+                      onClick={handleLogoutRequest}
+                      className="h-10 w-10 bg-white border border-slate-200 text-slate-400 hover:text-red-600 hover:border-red-100 hover:bg-red-50 rounded-full flex items-center justify-center transition-all shadow-sm"
+                      title="Keluar"
+                  >
+                      <LogOut className="w-4 h-4" />
+                  </button>
+
+                  {/* Mobile Menu Toggle */}
+                  <button 
+                    className="xl:hidden h-10 w-10 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-lg"
+                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  >
+                    <Menu className="w-5 h-5" />
+                  </button>
+              </div>
           </div>
-        </main>
 
-        {/* Footer */}
-        <footer className="text-center py-8 border-t border-slate-200/60 mt-auto">
-          <p className="text-xs text-slate-400 font-medium">
-             &copy; {new Date().getFullYear()} {userProfile.companyName || 'TimeMaster'}. Local-First Architecture.
-          </p>
-        </footer>
-      </div>
+          {/* Mobile Navigation Dropdown */}
+          {mobileMenuOpen && (
+              <div className="xl:hidden border-t border-slate-100 bg-white/95 backdrop-blur-xl animate-in slide-in-from-top-2">
+                  <div className="grid grid-cols-3 gap-2 p-4">
+                      {tabs.map((tab) => {
+                          const Icon = tab.icon;
+                          const isActive = activeTab === tab.id;
+                          return (
+                              <button
+                                  key={tab.id}
+                                  onClick={() => {
+                                      setActiveTab(tab.id);
+                                      setMobileMenuOpen(false);
+                                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                                  }}
+                                  className={`
+                                      flex flex-col items-center justify-center gap-2 p-3 rounded-xl text-xs font-bold transition-all
+                                      ${isActive ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200' : 'bg-slate-50 text-slate-500'}
+                                  `}
+                              >
+                                  <Icon className={`w-5 h-5 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
+                                  {tab.label}
+                              </button>
+                          );
+                      })}
+                  </div>
+              </div>
+          )}
+      </header>
+
+      {/* --- MAIN FLUID CONTAINER --- */}
+      <main className="flex-1 w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="transition-all duration-500 ease-out">
+          {renderContent()}
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="w-full border-t border-slate-200/60 bg-white/50 backdrop-blur-sm mt-auto">
+         <div className="max-w-[1920px] mx-auto px-6 py-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-xs text-slate-400 font-medium">
+                &copy; {new Date().getFullYear()} <span className="text-slate-600 font-bold">{userProfile.companyName || 'TimeMaster Corp'}</span>. All rights reserved.
+            </p>
+            <div className="flex items-center gap-6 text-xs text-slate-400 font-bold uppercase tracking-wider">
+                <span>Privacy</span>
+                <span>Terms</span>
+                <span>Support</span>
+            </div>
+         </div>
+      </footer>
     </div>
   );
 };
