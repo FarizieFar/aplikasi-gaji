@@ -11,6 +11,7 @@ import { FinanceTracker } from './components/FinanceTracker';
 import { Dashboard } from './components/Dashboard';
 import { DailyJournal } from './components/DailyJournal';
 import { WishlistManager } from './components/WishlistManager';
+import { SplashScreen } from './components/SplashScreen';
 import { WorkRecord, UserProfile, DEFAULT_PROFILE, generateEmployeeId } from './utils/timeUtils';
 import { AlertDialog, AlertType } from './components/ui/AlertDialog';
 import { UserAccount, getUserStorageKey } from './utils/auth';
@@ -28,6 +29,9 @@ enum Tab {
 }
 
 const App: React.FC = () => {
+  // UI State
+  const [showSplash, setShowSplash] = useState(true);
+
   // Auth State
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
   
@@ -77,8 +81,9 @@ const App: React.FC = () => {
     });
   };
 
-  // 1. Check for existing session on mount
+  // 1. Initial Load (Session & Splash)
   useEffect(() => {
+    // Check session
     const sessionStr = localStorage.getItem('timemaster_active_session');
     if (sessionStr) {
       try {
@@ -88,6 +93,13 @@ const App: React.FC = () => {
         localStorage.removeItem('timemaster_active_session');
       }
     }
+
+    // Splash Timer (2.5 seconds)
+    const timer = setTimeout(() => {
+        setShowSplash(false);
+    }, 2500);
+
+    return () => clearTimeout(timer);
   }, []);
 
   // 2. Load records and profile SPECIFIC TO USER
@@ -266,11 +278,17 @@ const App: React.FC = () => {
     }
   };
 
-  // If not authenticated, show Login Screen
+  // 1. SHOW SPLASH SCREEN
+  if (showSplash) {
+      return <SplashScreen />;
+  }
+
+  // 2. SHOW LOGIN SCREEN (If not authenticated)
   if (!currentUser) {
     return <LoginScreen onLogin={handleLogin} />;
   }
 
+  // 3. SHOW APP DASHBOARD
   return (
     <div className="min-h-screen bg-[#F8FAFC] relative font-sans flex flex-col">
       {/* Background Decor */}
