@@ -1,32 +1,64 @@
+
 import React, { useState } from 'react';
-import { Zap, Lock, User, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Zap, Lock, User, ArrowRight, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { loginUser, registerUser, UserAccount } from '../utils/auth';
 
 interface LoginScreenProps {
-  onLogin: (username: string) => void;
+  onLogin: (user: UserAccount) => void;
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
   const [isLoginMode, setIsLoginMode] = useState(true);
+  
+  // Form State
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  
+  // UI State
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   // Form handling
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccessMsg('');
     setIsLoading(true);
 
-    setTimeout(() => {
-      // Simple validation for Demo
-      if (username.length > 0 && password === '1234') {
-        onLogin(username);
-      } else {
-        setError('Kredensial tidak valid. (Gunakan Password: 1234)');
-        setIsLoading(false);
-      }
-    }, 1000);
+    // Simulate network delay for "Real App" feel
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    if (isLoginMode) {
+        // --- LOGIN LOGIC ---
+        const result = loginUser(username, password);
+        if (result.success && result.user) {
+            onLogin(result.user);
+        } else {
+            setError(result.message);
+            setIsLoading(false);
+        }
+    } else {
+        // --- REGISTER LOGIC ---
+        const result = registerUser(username, password);
+        if (result.success) {
+            setSuccessMsg(result.message);
+            setIsLoginMode(true); // Switch to login
+            setPassword(''); // Clear password
+            setIsLoading(false);
+        } else {
+            setError(result.message);
+            setIsLoading(false);
+        }
+    }
+  };
+
+  const toggleMode = () => {
+      setIsLoginMode(!isLoginMode);
+      setError('');
+      setSuccessMsg('');
+      setUsername('');
+      setPassword('');
   };
 
   return (
@@ -66,14 +98,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             <div className="flex gap-4">
                 <div className="flex -space-x-3">
                     {[1,2,3,4].map(i => (
-                        <div key={i} className="w-10 h-10 rounded-full border-2 border-slate-900 bg-slate-700 flex items-center justify-center text-xs font-bold">
-                            U{i}
+                        <div key={i} className="w-10 h-10 rounded-full border-2 border-slate-900 bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-300">
+                            {String.fromCharCode(64+i)}
                         </div>
                     ))}
                 </div>
                 <div className="flex flex-col justify-center">
-                    <span className="text-sm font-bold text-white">1,000+ Users</span>
-                    <span className="text-xs text-slate-400">Trust our utility daily</span>
+                    <span className="text-sm font-bold text-white">Multi-User Ready</span>
+                    <span className="text-xs text-slate-400">Secure local storage database</span>
                 </div>
             </div>
         </div>
@@ -93,19 +125,26 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             
             <div className="text-center mb-10">
                 <h2 className="text-3xl font-black text-slate-900 mb-2">
-                    {isLoginMode ? 'Selamat Datang' : 'Buat Akun Baru'}
+                    {isLoginMode ? 'Selamat Datang' : 'Registrasi Akun'}
                 </h2>
                 <p className="text-slate-500 text-sm">
-                    {isLoginMode ? 'Masukkan detail untuk masuk ke workspace Anda.' : 'Mulai dengan akun lokal gratis Anda.'}
+                    {isLoginMode ? 'Masukkan akun Anda untuk melanjutkan.' : 'Buat akun baru untuk mulai menyimpan data.'}
                 </p>
             </div>
+
+            {successMsg && (
+                <div className="mb-6 p-4 bg-emerald-50 rounded-2xl flex items-center gap-3 border border-emerald-100 animate-in fade-in slide-in-from-top-2">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                    <span className="text-sm font-bold text-emerald-700">{successMsg}</span>
+                </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 
                 {/* Username Input */}
                 <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-900 uppercase tracking-wide ml-1">
-                        Username / ID
+                        Username
                     </label>
                     <div className="relative group focus-within:scale-[1.02] transition-transform">
                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
@@ -114,9 +153,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                         <input 
                             type="text" 
                             required
+                            minLength={3}
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            placeholder="e.g. johndoe"
+                            placeholder="e.g. budi_santoso"
                             className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 pr-4 font-semibold text-slate-800 focus:outline-none focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all placeholder:text-slate-400"
                         />
                     </div>
@@ -136,6 +176,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                         <input 
                             type="password" 
                             required
+                            minLength={4}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="••••••••"
@@ -144,13 +185,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                     </div>
                 </div>
 
-                {/* Additional Register Fields (Visual Only) */}
+                {/* Additional Register Info */}
                 {!isLoginMode && (
-                     <div className="p-3 bg-emerald-50 rounded-xl flex items-start gap-3 border border-emerald-100 animate-in fade-in slide-in-from-top-2">
-                        <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                        <div className="text-xs text-emerald-800">
-                            <p className="font-bold">Akun Lokal</p>
-                            <p>Data tersimpan aman di browser Anda.</p>
+                     <div className="p-3 bg-indigo-50 rounded-xl flex items-start gap-3 border border-indigo-100 animate-in fade-in slide-in-from-top-2">
+                        <CheckCircle2 className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
+                        <div className="text-xs text-indigo-800">
+                            <p className="font-bold">Database Lokal</p>
+                            <p>Data Anda akan disimpan terpisah dari user lain di browser ini.</p>
                         </div>
                      </div>
                 )}
@@ -170,10 +211,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                     className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm shadow-xl shadow-slate-300 hover:bg-indigo-600 hover:shadow-indigo-300 hover:-translate-y-1 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
                 >
                     {isLoading ? (
-                        <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
                         <>
-                           {isLoginMode ? 'Masuk' : 'Buat Akun'} 
+                           {isLoginMode ? 'Masuk' : 'Buat Akun Baru'} 
                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         </>
                     )}
@@ -185,24 +226,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                 <p className="text-sm font-medium text-slate-500">
                     {isLoginMode ? 'Belum punya akun?' : 'Sudah punya akun?'}
                     <button 
-                        onClick={() => {
-                            setIsLoginMode(!isLoginMode);
-                            setError('');
-                            setUsername('');
-                            setPassword('');
-                        }}
+                        onClick={toggleMode}
                         className="ml-2 font-bold text-indigo-600 hover:text-indigo-700 underline decoration-2 underline-offset-4 transition-colors"
                     >
-                        {isLoginMode ? 'Daftar Gratis' : 'Masuk'}
+                        {isLoginMode ? 'Daftar Sekarang' : 'Masuk'}
                     </button>
                 </p>
-            </div>
-
-            {/* Demo Hint */}
-            <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-                 <span className="inline-block bg-slate-100 text-slate-500 text-[10px] font-bold px-3 py-1 rounded-full border border-slate-200">
-                    Password Demo: 1234
-                 </span>
             </div>
 
          </div>
