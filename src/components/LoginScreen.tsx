@@ -1,64 +1,26 @@
 
 import React, { useState } from 'react';
-import { Zap, Lock, User, ArrowRight, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
-import { loginUser, registerUser, UserAccount } from '../utils/auth';
+import { Zap, User, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 interface LoginScreenProps {
-  onLogin: (user: UserAccount) => void;
+  onLogin: (username: string) => void;
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
-  const [isLoginMode, setIsLoginMode] = useState(true);
-  
-  // Form State
   const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  
-  // UI State
-  const [error, setError] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   // Form handling
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccessMsg('');
+    
+    if (username.trim().length === 0) return;
+
     setIsLoading(true);
 
-    // Simulate network delay for "Real App" feel
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    if (isLoginMode) {
-        // --- LOGIN LOGIC ---
-        const result = loginUser(username, password);
-        if (result.success && result.user) {
-            onLogin(result.user);
-        } else {
-            setError(result.message);
-            setIsLoading(false);
-        }
-    } else {
-        // --- REGISTER LOGIC ---
-        const result = registerUser(username, password);
-        if (result.success) {
-            setSuccessMsg(result.message);
-            setIsLoginMode(true); // Switch to login
-            setPassword(''); // Clear password
-            setIsLoading(false);
-        } else {
-            setError(result.message);
-            setIsLoading(false);
-        }
-    }
-  };
-
-  const toggleMode = () => {
-      setIsLoginMode(!isLoginMode);
-      setError('');
-      setSuccessMsg('');
-      setUsername('');
-      setPassword('');
+    setTimeout(() => {
+        onLogin(username);
+    }, 800);
   };
 
   return (
@@ -98,20 +60,20 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             <div className="flex gap-4">
                 <div className="flex -space-x-3">
                     {[1,2,3,4].map(i => (
-                        <div key={i} className="w-10 h-10 rounded-full border-2 border-slate-900 bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-300">
-                            {String.fromCharCode(64+i)}
+                        <div key={i} className="w-10 h-10 rounded-full border-2 border-slate-900 bg-slate-700 flex items-center justify-center text-xs font-bold">
+                            U{i}
                         </div>
                     ))}
                 </div>
                 <div className="flex flex-col justify-center">
-                    <span className="text-sm font-bold text-white">Multi-User Ready</span>
-                    <span className="text-xs text-slate-400">Secure local storage database</span>
+                    <span className="text-sm font-bold text-white">1,000+ Users</span>
+                    <span className="text-xs text-slate-400">Trust our utility daily</span>
                 </div>
             </div>
         </div>
 
         <div className="relative z-10 text-xs text-slate-500 font-medium">
-            &copy; 2024 TimeMaster Utility App. Local-First Architecture.
+            &copy; {new Date().getFullYear()} TimeMaster Utility App. Local-First Architecture.
         </div>
       </div>
 
@@ -125,26 +87,19 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             
             <div className="text-center mb-10">
                 <h2 className="text-3xl font-black text-slate-900 mb-2">
-                    {isLoginMode ? 'Selamat Datang' : 'Registrasi Akun'}
+                    Selamat Datang
                 </h2>
                 <p className="text-slate-500 text-sm">
-                    {isLoginMode ? 'Masukkan akun Anda untuk melanjutkan.' : 'Buat akun baru untuk mulai menyimpan data.'}
+                    Masukkan nama Anda untuk memulai sesi workspace lokal.
                 </p>
             </div>
-
-            {successMsg && (
-                <div className="mb-6 p-4 bg-emerald-50 rounded-2xl flex items-center gap-3 border border-emerald-100 animate-in fade-in slide-in-from-top-2">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-                    <span className="text-sm font-bold text-emerald-700">{successMsg}</span>
-                </div>
-            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 
                 {/* Username Input */}
                 <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-900 uppercase tracking-wide ml-1">
-                        Username
+                        Nama Pengguna
                     </label>
                     <div className="relative group focus-within:scale-[1.02] transition-transform">
                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
@@ -153,87 +108,38 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                         <input 
                             type="text" 
                             required
-                            minLength={3}
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            placeholder="e.g. budi_santoso"
+                            placeholder="Contoh: Budi Santoso"
                             className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 pr-4 font-semibold text-slate-800 focus:outline-none focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all placeholder:text-slate-400"
                         />
                     </div>
                 </div>
 
-                {/* Password Input */}
-                <div className="space-y-2">
-                    <div className="flex justify-between items-center ml-1">
-                        <label className="text-xs font-bold text-slate-900 uppercase tracking-wide">
-                            Kata Sandi
-                        </label>
-                    </div>
-                    <div className="relative group focus-within:scale-[1.02] transition-transform">
-                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
-                            <Lock className="w-5 h-5" />
-                        </div>
-                        <input 
-                            type="password" 
-                            required
-                            minLength={4}
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="••••••••"
-                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 pr-4 font-semibold text-slate-800 focus:outline-none focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all placeholder:text-slate-400"
-                        />
+                <div className="p-3 bg-emerald-50 rounded-xl flex items-start gap-3 border border-emerald-100 animate-in fade-in slide-in-from-top-2">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                    <div className="text-xs text-emerald-800">
+                        <p className="font-bold">Mode Lokal</p>
+                        <p>Tidak perlu password. Data tersimpan di browser Anda.</p>
                     </div>
                 </div>
-
-                {/* Additional Register Info */}
-                {!isLoginMode && (
-                     <div className="p-3 bg-indigo-50 rounded-xl flex items-start gap-3 border border-indigo-100 animate-in fade-in slide-in-from-top-2">
-                        <CheckCircle2 className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
-                        <div className="text-xs text-indigo-800">
-                            <p className="font-bold">Database Lokal</p>
-                            <p>Data Anda akan disimpan terpisah dari user lain di browser ini.</p>
-                        </div>
-                     </div>
-                )}
-
-                {/* Error Message */}
-                {error && (
-                    <div className="p-3 bg-rose-50 rounded-xl flex items-center gap-3 border border-rose-100 animate-in shake">
-                        <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
-                        <span className="text-xs font-bold text-rose-700">{error}</span>
-                    </div>
-                )}
 
                 {/* Submit Button */}
                 <button 
                     type="submit"
-                    disabled={isLoading}
+                    disabled={isLoading || !username.trim()}
                     className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm shadow-xl shadow-slate-300 hover:bg-indigo-600 hover:shadow-indigo-300 hover:-translate-y-1 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
                 >
                     {isLoading ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     ) : (
                         <>
-                           {isLoginMode ? 'Masuk' : 'Buat Akun Baru'} 
+                           Masuk Workspace
                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         </>
                     )}
                 </button>
             </form>
-            
-            {/* Toggle Mode */}
-            <div className="mt-8 text-center">
-                <p className="text-sm font-medium text-slate-500">
-                    {isLoginMode ? 'Belum punya akun?' : 'Sudah punya akun?'}
-                    <button 
-                        onClick={toggleMode}
-                        className="ml-2 font-bold text-indigo-600 hover:text-indigo-700 underline decoration-2 underline-offset-4 transition-colors"
-                    >
-                        {isLoginMode ? 'Daftar Sekarang' : 'Masuk'}
-                    </button>
-                </p>
-            </div>
-
          </div>
       </div>
     </div>

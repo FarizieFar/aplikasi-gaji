@@ -11,10 +11,8 @@ import { FinanceTracker } from './components/FinanceTracker';
 import { Dashboard } from './components/Dashboard';
 import { DailyJournal } from './components/DailyJournal';
 import { WishlistManager } from './components/WishlistManager';
-import { SplashScreen } from './components/SplashScreen';
 import { WorkRecord, UserProfile, DEFAULT_PROFILE, generateEmployeeId } from './utils/timeUtils';
 import { AlertDialog, AlertType } from './components/ui/AlertDialog';
-import { UserAccount, getUserStorageKey } from './utils/auth';
 
 enum Tab {
   DASHBOARD = 'dashboard',
@@ -28,12 +26,14 @@ enum Tab {
   SETTINGS = 'settings'
 }
 
-const App: React.FC = () => {
-  // UI State
-  const [showSplash, setShowSplash] = useState(true);
+const STORAGE_KEY_RECORDS = 'timemaster_records';
+const STORAGE_KEY_USER = 'timemaster_user';
+const STORAGE_KEY_PROFILE = 'timemaster_profile';
 
+const App: React.FC = () => {
   // Auth State
-  const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState('');
   
   // App State
   const [activeTab, setActiveTab] = useState<Tab>(Tab.DASHBOARD);
@@ -81,87 +81,60 @@ const App: React.FC = () => {
     });
   };
 
-  // 1. Initial Load (Session & Splash)
+  // 1. Check for existing session on mount
   useEffect(() => {
-    // Check session
-    const sessionStr = localStorage.getItem('timemaster_active_session');
-    if (sessionStr) {
-      try {
-        const user = JSON.parse(sessionStr);
-        setCurrentUser(user);
-      } catch (e) {
-        localStorage.removeItem('timemaster_active_session');
-      }
+    const savedUser = localStorage.getItem(STORAGE_KEY_USER);
+    if (savedUser) {
+      setCurrentUser(savedUser);
+      setIsAuthenticated(true);
     }
-
-    // Splash Timer (2.5 seconds)
-    const timer = setTimeout(() => {
-        setShowSplash(false);
-    }, 2500);
-
-    return () => clearTimeout(timer);
   }, []);
 
-  // 2. Load records and profile SPECIFIC TO USER
+  // 2. Load records and profile from storage when authenticated
   useEffect(() => {
-    if (currentUser) {
-      // Keys are now like: tm_user_abc123_records
-      const keyRecords = getUserStorageKey(currentUser.id, 'records');
-      const keyProfile = getUserStorageKey(currentUser.id, 'profile');
-
-      const savedRecords = localStorage.getItem(keyRecords);
+    if (isAuthenticated) {
+      const savedRecords = localStorage.getItem(STORAGE_KEY_RECORDS);
       if (savedRecords) {
         try {
           setRecords(JSON.parse(savedRecords));
         } catch (e) {
           console.error("Failed to parse records", e);
-          setRecords([]);
         }
-      } else {
-          setRecords([]); // Reset if new user
       }
 
-      const savedProfile = localStorage.getItem(keyProfile);
+      const savedProfile = localStorage.getItem(STORAGE_KEY_PROFILE);
       if (savedProfile) {
         try {
             setUserProfile(JSON.parse(savedProfile));
         } catch (e) {
             console.error("Failed to parse profile", e);
         }
-      } else {
-        // Init default profile for new user but customize name
-        setUserProfile({
-            ...DEFAULT_PROFILE,
-            employeeName: currentUser.username.charAt(0).toUpperCase() + currentUser.username.slice(1),
-            employeeId: generateEmployeeId()
-        });
       }
     }
-  }, [currentUser]);
+  }, [isAuthenticated]);
 
-  // 3. Save records to USER SPECIFIC STORAGE
+  // 3. Save records to storage whenever they change (if authenticated)
   useEffect(() => {
-    if (currentUser) {
-      const keyRecords = getUserStorageKey(currentUser.id, 'records');
-      localStorage.setItem(keyRecords, JSON.stringify(records));
+    if (isAuthenticated) {
+      localStorage.setItem(STORAGE_KEY_RECORDS, JSON.stringify(records));
     }
-  }, [records, currentUser]);
+  }, [records, isAuthenticated]);
 
-  const handleLogin = (user: UserAccount) => {
-    setCurrentUser(user);
-    localStorage.setItem('timemaster_active_session', JSON.stringify(user));
+  const handleLogin = (username: string) => {
+    setIsAuthenticated(true);
+    setCurrentUser(username);
+    localStorage.setItem(STORAGE_KEY_USER, username);
   };
 
   const handleLogoutRequest = () => {
     showAlert(
         'danger',
         'Konfirmasi Keluar',
-        'Apakah Anda yakin ingin keluar? Data Anda tersimpan aman di akun ini.',
+        'Apakah Anda yakin ingin keluar dari sesi ini? Data Anda tetap aman tersimpan.',
         () => {
-            setCurrentUser(null);
-            localStorage.removeItem('timemaster_active_session');
-            setRecords([]); // Clear memory
-            setUserProfile(DEFAULT_PROFILE); // Reset profile in memory
+            setIsAuthenticated(false);
+            setCurrentUser('');
+            localStorage.removeItem(STORAGE_KEY_USER);
         },
         'Ya, Keluar'
     );
@@ -190,7 +163,7 @@ const App: React.FC = () => {
     showAlert(
         'danger',
         'Hapus Data?',
-        'Tindakan ini tidak dapat dibatalkan.',
+        'Tindakan ini tidak dapat dibatalkan. Data absensi ini akan dihapus permanen dari penyimpanan browser.',
         () => {
              setRecords(prev => prev.filter(r => r.id !== id));
         },
@@ -200,30 +173,24 @@ const App: React.FC = () => {
 
   const handleSaveProfile = (profile: UserProfile) => {
     setUserProfile(profile);
-    if (currentUser) {
-        const keyProfile = getUserStorageKey(currentUser.id, 'profile');
-        localStorage.setItem(keyProfile, JSON.stringify(profile));
-    }
+    localStorage.setItem(STORAGE_KEY_PROFILE, JSON.stringify(profile));
   };
 
   // Logic to rotate employee ID
   const handleRotateEmployeeId = () => {
     const newId = generateEmployeeId();
     const updatedProfile = { ...userProfile, employeeId: newId };
-    handleSaveProfile(updatedProfile);
+    setUserProfile(updatedProfile);
+    localStorage.setItem(STORAGE_KEY_PROFILE, JSON.stringify(updatedProfile));
     console.log("Employee ID Rotated to:", newId);
   };
 
   const handleImportData = (data: { profile: UserProfile, records: WorkRecord[] }) => {
      setUserProfile(data.profile);
      setRecords(data.records);
-     if (currentUser) {
-        const keyProfile = getUserStorageKey(currentUser.id, 'profile');
-        const keyRecords = getUserStorageKey(currentUser.id, 'records');
-        localStorage.setItem(keyProfile, JSON.stringify(data.profile));
-        localStorage.setItem(keyRecords, JSON.stringify(data.records));
-     }
-     showAlert('success', 'Restore Berhasil', 'Data berhasil dipulihkan.', () => {}, 'OK');
+     localStorage.setItem(STORAGE_KEY_PROFILE, JSON.stringify(data.profile));
+     localStorage.setItem(STORAGE_KEY_RECORDS, JSON.stringify(data.records));
+     showAlert('success', 'Restore Berhasil', 'Data profil dan riwayat absensi berhasil dipulihkan dari backup.', () => {}, 'OK');
   };
 
   const tabs = [
@@ -278,17 +245,11 @@ const App: React.FC = () => {
     }
   };
 
-  // 1. SHOW SPLASH SCREEN
-  if (showSplash) {
-      return <SplashScreen />;
-  }
-
-  // 2. SHOW LOGIN SCREEN (If not authenticated)
-  if (!currentUser) {
+  // If not authenticated, show Login Screen
+  if (!isAuthenticated) {
     return <LoginScreen onLogin={handleLogin} />;
   }
 
-  // 3. SHOW APP DASHBOARD
   return (
     <div className="min-h-screen bg-[#F8FAFC] relative font-sans flex flex-col">
       {/* Background Decor */}
