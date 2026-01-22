@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { Clock, Timer, Zap, CalendarDays, Wallet, LogOut, UserCircle, Settings as SettingsIcon, LayoutDashboard, Coins, Briefcase, ClipboardList } from 'lucide-react';
+import { Clock, Timer, Zap, CalendarDays, Wallet, LogOut, UserCircle, Settings as SettingsIcon, LayoutDashboard, Coins, Briefcase, ClipboardList, ShoppingBag } from 'lucide-react';
 import { TimeAdder } from './components/TimeAdder';
 import { DurationCalculator } from './components/DurationCalculator';
 import { WageCalculator } from './components/WageCalculator';
@@ -9,6 +10,7 @@ import { Settings } from './components/Settings';
 import { FinanceTracker } from './components/FinanceTracker';
 import { Dashboard } from './components/Dashboard';
 import { DailyJournal } from './components/DailyJournal';
+import { WishlistManager } from './components/WishlistManager';
 import { WorkRecord, UserProfile, DEFAULT_PROFILE, generateEmployeeId } from './utils/timeUtils';
 import { AlertDialog, AlertType } from './components/ui/AlertDialog';
 
@@ -17,6 +19,7 @@ enum Tab {
   RECAP = 'recap',
   JOURNAL = 'journal',
   FINANCE = 'finance',
+  WISHLIST = 'wishlist',
   SALARY = 'salary',
   ADDER = 'adder',
   DURATION = 'duration',
@@ -194,6 +197,7 @@ const App: React.FC = () => {
     { id: Tab.RECAP, label: 'Rekap', icon: CalendarDays },
     { id: Tab.JOURNAL, label: 'Aktivitas', icon: ClipboardList },
     { id: Tab.FINANCE, label: 'Keuangan', icon: Coins },
+    { id: Tab.WISHLIST, label: 'Wishlist', icon: ShoppingBag },
     { id: Tab.SALARY, label: 'Gaji', icon: Wallet },
     { id: Tab.ADDER, label: 'Waktu', icon: Clock },
     { id: Tab.DURATION, label: 'Durasi', icon: Timer },
@@ -229,6 +233,8 @@ const App: React.FC = () => {
         );
       case Tab.JOURNAL:
         return <DailyJournal />;
+      case Tab.WISHLIST:
+        return <WishlistManager />;
       case Tab.SETTINGS:
         return <Settings currentProfile={userProfile} onSave={handleSaveProfile} onImportData={handleImportData} currentRecords={records} />;
       case Tab.FINANCE:
@@ -264,7 +270,7 @@ const App: React.FC = () => {
 
       <div className="max-w-5xl mx-auto px-4 py-6 sm:px-6 lg:px-8 min-h-screen flex flex-col">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8 pt-2 gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-center mb-6 pt-2 gap-4">
             <div className="flex items-center gap-4 w-full md:w-auto">
                 <div className="relative">
                     <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center shadow-xl shadow-slate-200">
@@ -305,54 +311,40 @@ const App: React.FC = () => {
             </div>
         </div>
 
-        {/* --- MODERN NAVIGATION DOCK --- */}
-        <div className="sticky top-4 z-50 mb-8">
-            <nav className="bg-white/80 backdrop-blur-xl p-2 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60 flex flex-wrap justify-center gap-2 mx-auto max-w-fit ring-1 ring-slate-900/5">
-                {tabs.map((tab) => {
-                    const Icon = tab.icon;
-                    const isActive = activeTab === tab.id;
-                    return (
-                        <button
-                            key={tab.id}
-                            onClick={() => {
-                                setActiveTab(tab.id);
-                                window.scrollTo({ top: 0, behavior: 'smooth' });
-                            }}
-                            className={`
-                                relative flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 group overflow-hidden
-                                ${isActive ? 'text-white shadow-lg shadow-slate-900/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}
-                            `}
-                        >
-                            {/* Animated Background for Active Tab */}
-                            {isActive && (
-                                <div className="absolute inset-0 bg-slate-900 rounded-xl z-0 transition-all duration-300">
-                                    <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/10 to-transparent"></div>
-                                </div>
-                            )}
-
-                            {/* Content */}
-                            <div className="relative z-10 flex items-center gap-2">
+        {/* --- MODERN FLOATING NAVIGATION --- */}
+        <div className="sticky top-4 z-40 mb-8 mx-auto max-w-full">
+            <nav className="relative bg-white/70 backdrop-blur-2xl border border-white/50 p-1.5 rounded-[2rem] shadow-xl shadow-slate-200/40 ring-1 ring-white/60">
+                <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide py-1 px-1 snap-x [&::-webkit-scrollbar]:hidden">
+                    {tabs.map((tab) => {
+                        const Icon = tab.icon;
+                        const isActive = activeTab === tab.id;
+                        return (
+                            <button
+                                key={tab.id}
+                                onClick={() => {
+                                    setActiveTab(tab.id);
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
+                                className={`
+                                    relative flex-shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-[1.5rem] text-xs font-bold transition-all duration-300 snap-center
+                                    ${isActive 
+                                        ? 'bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 text-white shadow-lg shadow-indigo-500/30 scale-105 ring-2 ring-white ring-opacity-50' 
+                                        : 'text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-sm'}
+                                `}
+                            >
                                 <Icon 
-                                    className={`w-4 h-4 transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-105'}`} 
+                                    className={`w-4 h-4 transition-transform duration-300 ${isActive ? 'scale-110 rotate-0' : 'group-hover:scale-105'}`} 
                                     strokeWidth={isActive ? 2.5 : 2}
                                 />
-                                <span className="tracking-wide">{tab.label}</span>
-                            </div>
-
-                            {/* Active Indicator Dot */}
-                            {isActive && (
-                                <span className="absolute bottom-1 w-1 h-1 bg-white/50 rounded-full z-10 shadow-sm"></span>
-                            )}
-
-                            {/* Notification Badge */}
-                            {tab.id === Tab.RECAP && records.length > 0 && (
-                                <span className="absolute top-2 right-2 flex h-2 w-2 z-20">
-                                    <span className={`relative inline-flex rounded-full h-2 w-2 ${isActive ? 'bg-rose-400' : 'bg-rose-500'}`}></span>
-                                </span>
-                            )}
-                        </button>
-                    );
-                })}
+                                <span className="tracking-wide whitespace-nowrap">{tab.label}</span>
+                                
+                                {tab.id === Tab.RECAP && records.length > 0 && (
+                                    <span className={`absolute top-2 right-2 flex h-2 w-2 ${isActive ? 'bg-white' : 'bg-rose-500'} rounded-full animate-pulse`}></span>
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
             </nav>
         </div>
 

@@ -1,3 +1,4 @@
+
 export interface TimeParts {
   hours: number;
   minutes: number;
@@ -33,7 +34,17 @@ export interface JournalTask {
   completed: boolean;
   category: 'work' | 'personal' | 'urgent';
   createdAt: string;
-  scheduledTime?: string; // Made optional as requested
+}
+
+export interface WishlistItem {
+  id: string;
+  itemName: string;
+  price: number;
+  priority: 'high' | 'medium' | 'low';
+  status: 'active' | 'purchased';
+  createdAt: string;
+  targetMonth?: string; // Format "YYYY-MM"
+  notes?: string;
 }
 
 export interface UserProfile {
