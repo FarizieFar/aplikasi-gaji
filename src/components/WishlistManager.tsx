@@ -4,7 +4,8 @@ import {
   ShoppingBag, Plus, Trash2, Check, Star, 
   TrendingUp, Sparkles, AlertCircle, X, Tag,
   LayoutGrid, List as ListIcon, Heart, Trophy, Target,
-  Calendar, ChevronLeft, ChevronRight
+  Calendar, ChevronLeft, ChevronRight, Calculator, ArrowRight,
+  StickyNote, CreditCard
 } from 'lucide-react';
 import { WishlistItem, formatCurrency } from '../utils/timeUtils';
 
@@ -21,6 +22,7 @@ export const WishlistManager: React.FC = () => {
   const [itemPrice, setItemPrice] = useState('');
   const [priority, setPriority] = useState<'high' | 'medium' | 'low'>('medium');
   const [targetMonth, setTargetMonth] = useState(''); // YYYY-MM
+  const [notes, setNotes] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   // Load Data
@@ -66,7 +68,8 @@ export const WishlistManager: React.FC = () => {
       priority,
       status: 'active',
       createdAt: new Date().toISOString(),
-      targetMonth: targetMonth || new Date().toISOString().slice(0, 7)
+      targetMonth: targetMonth || new Date().toISOString().slice(0, 7),
+      notes: notes
     };
 
     setItems(prev => [newItem, ...prev]);
@@ -77,6 +80,7 @@ export const WishlistManager: React.FC = () => {
     setItemName('');
     setItemPrice('');
     setPriority('medium');
+    setNotes('');
     setTargetMonth(viewDate.toISOString().slice(0, 7));
     setIsFormOpen(false);
   };
@@ -138,14 +142,22 @@ export const WishlistManager: React.FC = () => {
     switch(p) {
       case 'high': return 'bg-rose-100 text-rose-700 border-rose-200 ring-rose-500';
       case 'medium': return 'bg-amber-100 text-amber-700 border-amber-200 ring-amber-500';
-      default: return 'bg-slate-100 text-slate-600 border-slate-200 ring-slate-400';
+      default: return 'bg-blue-100 text-blue-700 border-blue-200 ring-blue-500';
     }
+  };
+  
+  const getThemeColor = (p: string) => {
+     switch(p) {
+        case 'high': return 'from-rose-500 to-pink-600 shadow-rose-200';
+        case 'medium': return 'from-amber-400 to-orange-500 shadow-amber-200';
+        default: return 'from-blue-400 to-indigo-500 shadow-blue-200';
+     }
   };
 
   const monthLabel = viewDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
 
   return (
-    <div className="w-full space-y-8 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="w-full space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
       
       {/* --- MONTH NAVIGATOR --- */}
       <div className="flex items-center justify-between bg-white p-3 rounded-2xl shadow-sm border border-slate-200 max-w-xl mx-auto">
@@ -214,10 +226,10 @@ export const WishlistManager: React.FC = () => {
               </div>
           </div>
 
-          {/* Add New Button Card */}
+          {/* Add New Button Card (Desktop) */}
           <button 
               onClick={() => setIsFormOpen(true)}
-              className="xl:col-span-4 bg-white rounded-[2.5rem] p-8 border border-slate-200 shadow-sm hover:shadow-xl hover:border-indigo-200 hover:-translate-y-1 transition-all group relative overflow-hidden flex flex-col items-center justify-center gap-6 text-center cursor-pointer min-h-[240px]"
+              className="hidden xl:flex xl:col-span-4 bg-white rounded-[2.5rem] p-8 border border-slate-200 shadow-sm hover:shadow-xl hover:border-indigo-200 hover:-translate-y-1 transition-all group relative overflow-hidden flex-col items-center justify-center gap-6 text-center cursor-pointer min-h-[240px]"
           >
               <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-fuchsia-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center group-hover:bg-indigo-600 transition-colors z-10 shadow-inner">
@@ -230,61 +242,116 @@ export const WishlistManager: React.FC = () => {
           </button>
       </div>
 
-      {/* --- FORM MODAL --- */}
+      {/* --- FLOATING ACTION BUTTON (MOBILE) --- */}
+      <button 
+          onClick={() => setIsFormOpen(true)}
+          className="xl:hidden fixed bottom-6 right-6 w-14 h-14 bg-indigo-600 text-white rounded-full shadow-xl shadow-indigo-300 flex items-center justify-center z-40 hover:scale-110 hover:bg-indigo-700 transition-all active:scale-95"
+      >
+          <Plus className="w-8 h-8" />
+      </button>
+
+      {/* --- ATTRACTIVE FORM MODAL OVERLAY --- */}
       {isFormOpen && (
-          <div className="relative z-20 animate-in fade-in slide-in-from-top-4 max-w-2xl mx-auto">
-              <div className="bg-white rounded-[2rem] p-8 shadow-2xl border border-indigo-100 relative overflow-hidden">
-                   <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
+              {/* Backdrop */}
+              <div 
+                className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
+                onClick={resetForm}
+              ></div>
+
+              {/* Modal Card */}
+              <div className="relative w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[95vh] animate-in zoom-in-95 slide-in-from-bottom-8 duration-300">
                    
-                   <div className="flex justify-between items-center mb-6">
-                       <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                           <ShoppingBag className="w-6 h-6 text-indigo-600" />
-                           Item Baru: {monthLabel}
-                       </h3>
-                       <button onClick={resetForm} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors">
-                           <X className="w-5 h-5" />
-                       </button>
+                   {/* Dynamic Header */}
+                   <div className={`relative h-28 bg-gradient-to-r ${getThemeColor(priority)} shrink-0 transition-all duration-500`}>
+                       <div className="absolute top-4 right-4 z-10">
+                           <button onClick={resetForm} className="p-2 bg-black/20 hover:bg-black/30 text-white rounded-full transition-colors backdrop-blur-md">
+                               <X className="w-5 h-5" />
+                           </button>
+                       </div>
+                       
+                       {/* Header Content */}
+                       <div className="absolute bottom-6 left-8 text-white">
+                           <div className="flex items-center gap-2 text-white/80 text-xs font-bold uppercase tracking-widest mb-1">
+                               <Sparkles className="w-4 h-4" />
+                               New Wishlist Item
+                           </div>
+                           <h2 className="text-3xl font-black tracking-tight">
+                               {itemName || 'Nama Barang...'}
+                           </h2>
+                       </div>
+
+                       {/* Decorative Icon */}
+                       <div className="absolute -bottom-6 right-8 w-20 h-20 bg-white rounded-2xl shadow-xl flex items-center justify-center rotate-6 transform transition-transform hover:rotate-12">
+                           {priority === 'high' ? (
+                               <AlertCircle className="w-10 h-10 text-rose-500" />
+                           ) : priority === 'medium' ? (
+                               <Star className="w-10 h-10 text-amber-500" />
+                           ) : (
+                               <Heart className="w-10 h-10 text-blue-500" />
+                           )}
+                       </div>
                    </div>
 
-                   <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-slate-400 uppercase tracking-wide ml-1">Nama Barang</label>
-                                <input 
-                                    type="text"
-                                    required
-                                    autoFocus
-                                    placeholder="Contoh: Laptop Baru, Sepatu Lari..."
-                                    value={itemName}
-                                    onChange={(e) => setItemName(e.target.value)}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 font-bold text-slate-700 focus:ring-4 focus:ring-indigo-100 focus:outline-none transition-all"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-slate-400 uppercase tracking-wide ml-1">Harga Estimasi</label>
-                                <div className="relative group">
-                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 font-bold text-slate-400 group-focus-within:text-indigo-500">Rp</span>
+                   <div className="p-8 pt-10 overflow-y-auto">
+                       <form onSubmit={handleSubmit} className="space-y-6">
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Input Name */}
+                                <div className="space-y-2 md:col-span-2">
+                                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wide ml-1">Nama Barang</label>
                                     <input 
                                         type="text"
-                                        inputMode="numeric"
                                         required
-                                        placeholder="0"
-                                        value={itemPrice ? new Intl.NumberFormat('id-ID').format(parseInt(itemPrice)) : ''}
-                                        onChange={handlePriceChange}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-5 py-4 font-bold text-slate-700 focus:ring-4 focus:ring-indigo-100 focus:outline-none transition-all"
+                                        autoFocus
+                                        placeholder="Contoh: iPhone 15 Pro"
+                                        value={itemName}
+                                        onChange={(e) => setItemName(e.target.value)}
+                                        className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-xl font-bold text-slate-800 placeholder:text-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-0 transition-all"
                                     />
                                 </div>
-                            </div>
-                        </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                             <div className="space-y-3">
+                                {/* Input Price */}
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wide ml-1">Harga Estimasi</label>
+                                    <div className="relative group">
+                                        <div className="absolute left-5 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
+                                            <span className="font-black text-slate-300 text-lg group-focus-within:text-indigo-500 transition-colors">Rp</span>
+                                        </div>
+                                        <input 
+                                            type="text"
+                                            inputMode="numeric"
+                                            required
+                                            placeholder="0"
+                                            value={itemPrice ? new Intl.NumberFormat('id-ID').format(parseInt(itemPrice)) : ''}
+                                            onChange={handlePriceChange}
+                                            className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl pl-12 pr-5 py-4 text-xl font-black text-slate-800 placeholder:text-slate-200 focus:border-indigo-500 focus:bg-white focus:ring-0 transition-all"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Target Month */}
+                                <div className="space-y-2">
+                                     <label className="text-xs font-bold text-slate-400 uppercase tracking-wide ml-1">Target Bulan</label>
+                                     <div className="relative">
+                                        <input 
+                                            type="month"
+                                            value={targetMonth}
+                                            onChange={(e) => setTargetMonth(e.target.value)}
+                                            className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 font-bold text-slate-700 focus:border-indigo-500 focus:ring-0 transition-all text-sm h-[60px]"
+                                        />
+                                     </div>
+                                </div>
+                            </div>
+
+                            {/* Priority Selection */}
+                            <div className="space-y-3">
                                 <label className="text-xs font-bold text-slate-400 uppercase tracking-wide ml-1">Prioritas Kebutuhan</label>
                                 <div className="grid grid-cols-3 gap-3">
                                     {[
-                                        { id: 'high', label: 'Tinggi', icon: AlertCircle, color: 'bg-rose-50 border-rose-200 text-rose-600 ring-rose-500' },
-                                        { id: 'medium', label: 'Sedang', icon: Star, color: 'bg-amber-50 border-amber-200 text-amber-600 ring-amber-500' },
-                                        { id: 'low', label: 'Rendah', icon: Heart, color: 'bg-blue-50 border-blue-200 text-blue-600 ring-blue-500' }
+                                        { id: 'high', label: 'Tinggi', sub: 'Urgent', icon: AlertCircle, color: 'bg-rose-50 border-rose-200 text-rose-600 ring-rose-500' },
+                                        { id: 'medium', label: 'Sedang', sub: 'Normal', icon: Star, color: 'bg-amber-50 border-amber-200 text-amber-600 ring-amber-500' },
+                                        { id: 'low', label: 'Rendah', sub: 'Wishlist', icon: Heart, color: 'bg-blue-50 border-blue-200 text-blue-600 ring-blue-500' }
                                     ].map((p) => {
                                         const isActive = priority === p.id;
                                         const Icon = p.icon;
@@ -294,40 +361,54 @@ export const WishlistManager: React.FC = () => {
                                                 type="button"
                                                 onClick={() => setPriority(p.id as any)}
                                                 className={`
-                                                    relative flex flex-col items-center justify-center gap-2 py-3 rounded-2xl border-2 transition-all duration-300
+                                                    relative flex flex-col items-start p-4 rounded-2xl border-2 transition-all duration-200 text-left
                                                     ${isActive 
-                                                        ? `${p.color} ring-2 ring-offset-2 shadow-sm` 
+                                                        ? `${p.color} ring-2 ring-offset-2 border-transparent shadow-lg transform scale-[1.02]` 
                                                         : 'bg-white border-slate-100 text-slate-400 hover:border-slate-300 hover:bg-slate-50'}
                                                 `}
                                             >
-                                                <Icon className={`w-5 h-5 ${isActive ? 'fill-current' : ''}`} />
-                                                <span className="text-xs font-bold">{p.label}</span>
+                                                <div className="flex justify-between w-full mb-2">
+                                                    <Icon className={`w-5 h-5 ${isActive ? 'fill-current' : ''}`} strokeWidth={2.5} />
+                                                    {isActive && <div className="w-2 h-2 rounded-full bg-current animate-pulse"></div>}
+                                                </div>
+                                                <span className={`text-sm font-bold ${isActive ? 'text-slate-800' : 'text-slate-500'}`}>{p.label}</span>
+                                                <span className="text-[10px] opacity-70 font-medium uppercase tracking-wider">{p.sub}</span>
                                             </button>
                                         );
                                     })}
                                 </div>
-                             </div>
+                            </div>
 
-                             <div className="space-y-3">
-                                 <label className="text-xs font-bold text-slate-400 uppercase tracking-wide ml-1">Target Bulan</label>
-                                 <input 
-                                     type="month"
-                                     value={targetMonth}
-                                     onChange={(e) => setTargetMonth(e.target.value)}
-                                     className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 font-bold text-slate-700 focus:ring-4 focus:ring-indigo-100 focus:outline-none transition-all"
-                                 />
-                             </div>
-                        </div>
+                            {/* Notes Input (Optional) */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-slate-400 uppercase tracking-wide ml-1 flex items-center gap-2">
+                                    <StickyNote className="w-3 h-3" /> Catatan Tambahan (Opsional)
+                                </label>
+                                <textarea
+                                    value={notes}
+                                    onChange={(e) => setNotes(e.target.value)}
+                                    placeholder="Link pembelian, spesifikasi, warna, dll..."
+                                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-3 font-medium text-slate-700 placeholder:text-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-0 transition-all resize-none h-24 text-sm"
+                                />
+                            </div>
 
-                        <div className="pt-4 flex gap-3">
-                            <button type="button" onClick={resetForm} className="flex-1 py-4 font-bold text-slate-500 hover:bg-slate-100 rounded-2xl transition-colors">
-                                Batal
-                            </button>
-                            <button type="submit" className="flex-[2] py-4 bg-slate-900 text-white font-bold rounded-2xl shadow-xl hover:bg-indigo-600 transition-colors flex items-center justify-center gap-2">
-                                <Plus className="w-5 h-5" /> Simpan Target
-                            </button>
-                        </div>
-                   </form>
+                            {/* Footer Buttons */}
+                            <div className="pt-4 flex gap-4">
+                                <button type="button" onClick={resetForm} className="px-6 py-4 font-bold text-slate-500 hover:bg-slate-100 rounded-2xl transition-colors">
+                                    Batal
+                                </button>
+                                <button 
+                                    type="submit" 
+                                    className={`
+                                        flex-1 py-4 text-white font-bold rounded-2xl shadow-xl transition-all flex items-center justify-center gap-2 transform active:scale-[0.98]
+                                        bg-gradient-to-r ${getThemeColor(priority)}
+                                    `}
+                                >
+                                    <Plus className="w-5 h-5" /> Simpan Target
+                                </button>
+                            </div>
+                       </form>
+                   </div>
               </div>
           </div>
       )}
@@ -395,6 +476,9 @@ export const WishlistManager: React.FC = () => {
                                 <h4 className={`font-bold text-lg mb-1 leading-snug ${isPurchased ? 'text-slate-500 line-through' : 'text-slate-800'}`}>
                                     {item.itemName}
                                 </h4>
+                                {item.notes && (
+                                    <p className="text-xs text-slate-400 mt-1 line-clamp-2">{item.notes}</p>
+                                )}
                               </div>
 
                               <div className={`text-2xl font-black tracking-tight mt-4 ${isPurchased ? 'text-slate-400' : 'text-indigo-600'}`}>
