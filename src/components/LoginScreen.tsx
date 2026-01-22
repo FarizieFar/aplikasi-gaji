@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Zap, User, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Zap, User, ArrowRight, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 interface LoginScreenProps {
   onLogin: (username: string) => void;
@@ -8,18 +8,28 @@ interface LoginScreenProps {
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
   const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   // Form handling
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     
-    if (username.trim().length === 0) return;
+    if (username.trim().length === 0 || password.length === 0) return;
 
     setIsLoading(true);
 
     setTimeout(() => {
-        onLogin(username);
+        if (password === '1234') {
+            onLogin(username);
+        } else {
+            setError('Password salah. Akses ditolak.');
+            setIsLoading(false);
+            setPassword('');
+        }
     }, 800);
   };
 
@@ -85,16 +95,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
          
          <div className="w-full max-w-md bg-white p-8 sm:p-10 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-white relative z-10">
             
-            <div className="text-center mb-10">
+            <div className="text-center mb-8">
                 <h2 className="text-3xl font-black text-slate-900 mb-2">
                     Selamat Datang
                 </h2>
                 <p className="text-slate-500 text-sm">
-                    Masukkan nama Anda untuk memulai sesi workspace lokal.
+                    Masuk untuk mengakses workspace Anda.
                 </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
                 
                 {/* Username Input */}
                 <div className="space-y-2">
@@ -116,19 +126,45 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                     </div>
                 </div>
 
-                <div className="p-3 bg-emerald-50 rounded-xl flex items-start gap-3 border border-emerald-100 animate-in fade-in slide-in-from-top-2">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                    <div className="text-xs text-emerald-800">
-                        <p className="font-bold">Mode Lokal</p>
-                        <p>Tidak perlu password. Data tersimpan di browser Anda.</p>
+                {/* Password Input */}
+                <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-900 uppercase tracking-wide ml-1">
+                        Password
+                    </label>
+                    <div className="relative group focus-within:scale-[1.02] transition-transform">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
+                            <Lock className="w-5 h-5" />
+                        </div>
+                        <input 
+                            type={showPassword ? "text" : "password"}
+                            required
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="••••••"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 pr-12 font-semibold text-slate-800 focus:outline-none focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all placeholder:text-slate-400"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
+                        >
+                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
                     </div>
                 </div>
+                
+                {error && (
+                    <div className="flex items-center gap-2 text-rose-500 bg-rose-50 p-3 rounded-xl text-xs font-bold animate-in fade-in slide-in-from-top-2 border border-rose-100">
+                        <AlertCircle className="w-4 h-4 shrink-0" />
+                        {error}
+                    </div>
+                )}
 
                 {/* Submit Button */}
                 <button 
                     type="submit"
-                    disabled={isLoading || !username.trim()}
-                    className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm shadow-xl shadow-slate-300 hover:bg-indigo-600 hover:shadow-indigo-300 hover:-translate-y-1 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
+                    disabled={isLoading || !username.trim() || !password}
+                    className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm shadow-xl shadow-slate-300 hover:bg-indigo-600 hover:shadow-indigo-300 hover:-translate-y-1 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 group mt-4"
                 >
                     {isLoading ? (
                         <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
